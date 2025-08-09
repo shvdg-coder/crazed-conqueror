@@ -13,18 +13,18 @@ import (
 var maxAttempts = 12
 var retryDelay = time.Second * 5
 
-// DatabaseSvc manages database connections and configurations using pgx
-type DatabaseSvc struct {
+// Service manages database connections and configurations using pgx
+type Service struct {
 	driverName, dsn string
 	*pgxpool.Pool
 }
 
-// DatabaseSvcOpt configures the DatabaseSvc during initialization
-type DatabaseSvcOpt func(*DatabaseSvc) error
+// ServiceOpt configures the Service during initialization
+type ServiceOpt func(*Service) error
 
-// NewDatabaseSvc initializes a new DatabaseSvc with optional configurations
-func NewDatabaseSvc(driverName, dsn string, options ...DatabaseSvcOpt) (*DatabaseSvc, error) {
-	service := &DatabaseSvc{
+// NewDatabaseSvc initializes a new Service with optional configurations
+func NewDatabaseSvc(driverName, dsn string, options ...ServiceOpt) (*Service, error) {
+	service := &Service{
 		driverName: driverName,
 		dsn:        dsn,
 	}
@@ -39,14 +39,14 @@ func NewDatabaseSvc(driverName, dsn string, options ...DatabaseSvcOpt) (*Databas
 }
 
 // WithConnection establishes an initial database connection using pgx
-func WithConnection() DatabaseSvcOpt {
-	return func(s *DatabaseSvc) error {
+func WithConnection() ServiceOpt {
+	return func(s *Service) error {
 		return s.Connect()
 	}
 }
 
 // Connect establishes a database connection using only pgx
-func (db *DatabaseSvc) Connect() error {
+func (db *Service) Connect() error {
 	if db.driverName != "postgres" {
 		return fmt.Errorf("unsupported driver: %s; pgx only supports postgres", db.driverName)
 	}
@@ -89,7 +89,7 @@ func (db *DatabaseSvc) Connect() error {
 }
 
 // Disconnect cleans up resources
-func (db *DatabaseSvc) Disconnect() error {
+func (db *Service) Disconnect() error {
 	if db.Pool != nil {
 		db.Pool.Close()
 	}
@@ -97,12 +97,12 @@ func (db *DatabaseSvc) Disconnect() error {
 }
 
 // GetPool returns the pgx pool connection
-func (db *DatabaseSvc) GetPool() *pgxpool.Pool {
+func (db *Service) GetPool() *pgxpool.Pool {
 	return db.Pool
 }
 
 // GetExecutor returns either the transaction or connection as the executor for a query.
-func (db *DatabaseSvc) GetExecutor(ctx context.Context) (Executor, func(), error) {
+func (db *Service) GetExecutor(ctx context.Context) (Executor, func(), error) {
 	var executor Executor
 	var cleanup func()
 
@@ -112,7 +112,7 @@ func (db *DatabaseSvc) GetExecutor(ctx context.Context) (Executor, func(), error
 	} else {
 		conn, err := db.GetPool().Acquire(ctx)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("failed to acquire connection: %w", err)
 		}
 		executor = conn.Conn()
 		cleanup = conn.Release

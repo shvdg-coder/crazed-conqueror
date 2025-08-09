@@ -21,7 +21,8 @@ type TestSuite struct {
 	Postgres *PostgresContainer
 	Server   *ServerContainer
 
-	Database database.Connection
+	Database *database.Service
+	Schemas  *database.Schemas
 }
 
 // SetupTestSuite prepares a suite to be used throughout multiple tests.
@@ -38,14 +39,14 @@ func SetupTestSuite() *TestSuite {
 		log.Fatalf("failed to setup Postgres container: %s", err.Error())
 	}
 
-	api, err := SetupServerContainer(ctx, net.Name)
+	server, err := SetupServerContainer(ctx, net.Name)
 	if err != nil {
 		log.Fatalf("failed to setup API container: %s", err.Error())
 	}
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
 
-	connection, err := database.NewDatabaseSvc(DriverName, dsn, database.WithConnection())
+	db, err := database.NewDatabaseSvc(DriverName, dsn, database.WithConnection())
 	if err != nil {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}
@@ -55,8 +56,8 @@ func SetupTestSuite() *TestSuite {
 		Network:    net,
 		HttpClient: &http.Client{},
 		Postgres:   postgres,
-		Server:     api,
-		Database:   connection,
+		Server:     server,
+		Database:   db,
 	}
 }
 
