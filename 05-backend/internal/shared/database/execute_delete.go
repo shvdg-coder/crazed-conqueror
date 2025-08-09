@@ -3,10 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 )
 
 // Delete performs a single delete operation
-func Delete(ctx context.Context, db DatabaseConn, tableName string, where string, arguments []any) error {
+func Delete(ctx context.Context, db Connection, tableName string, where string, arguments []any) error {
 	if ctx == nil || tableName == "" || where == "" {
 		return fmt.Errorf("invalid arguments to execute delete")
 	}
@@ -17,7 +18,7 @@ func Delete(ctx context.Context, db DatabaseConn, tableName string, where string
 	}
 	defer cleanup()
 
-	_, err = executor.Exec(ctx, fmt.Sprintf(DeleteQuery, tableName, where), arguments...)
+	_, err = executor.Exec(ctx, sql.CreateDeleteQuery(tableName, where), arguments...)
 	if err != nil {
 		return fmt.Errorf("failed to execute command: %w", err)
 	}

@@ -102,8 +102,8 @@ func (db *DatabaseSvc) GetPool() *pgxpool.Pool {
 }
 
 // GetExecutor returns either the transaction or connection as the executor for a query.
-func (db *DatabaseSvc) GetExecutor(ctx context.Context) (DatabaseExec, func(), error) {
-	var executor DatabaseExec
+func (db *DatabaseSvc) GetExecutor(ctx context.Context) (Executor, func(), error) {
+	var executor Executor
 	var cleanup func()
 
 	if tx := contexts.GetTransaction(ctx); tx != nil {

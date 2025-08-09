@@ -6,7 +6,7 @@ import (
 )
 
 // ReadOne executes a script with arguments and returns a single value.
-func ReadOne[T any](ctx context.Context, db DatabaseConn, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
+func ReadOne[T any](ctx context.Context, db Connection, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
 
 	if ctx == nil || script == "" || len(arguments) == 0 || scan == nil {
@@ -25,7 +25,7 @@ func ReadOne[T any](ctx context.Context, db DatabaseConn, script string, argumen
 }
 
 // ReadMany executes a script with arguments and returns a slice of values.
-func ReadMany[T any](ctx context.Context, db DatabaseConn, script string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
+func ReadMany[T any](ctx context.Context, db Connection, script string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
 	var zero []T
 	if ctx == nil || script == "" || len(arguments) == 0 || scan == nil {
 		return zero, fmt.Errorf("invalid arguments to execute read")

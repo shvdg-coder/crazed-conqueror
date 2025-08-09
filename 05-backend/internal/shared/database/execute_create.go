@@ -8,7 +8,7 @@ import (
 )
 
 // CreateOne performs a single insert operation
-func CreateOne(ctx context.Context, db DatabaseConn, tableName string, columnNames []string, values []any) error {
+func CreateOne(ctx context.Context, db Connection, tableName string, columnNames []string, values []any) error {
 	if ctx == nil || tableName == "" || len(columnNames) == 0 || len(values) == 0 {
 		return fmt.Errorf("invalid arguments to execute insert")
 	}
@@ -28,7 +28,7 @@ func CreateOne(ctx context.Context, db DatabaseConn, tableName string, columnNam
 }
 
 // CreateMany performs a bulk insert operation
-func CreateMany(ctx context.Context, db DatabaseConn, tableName string, columnNames []string, rows [][]any) error {
+func CreateMany(ctx context.Context, db Connection, tableName string, columnNames []string, rows [][]any) error {
 	if ctx == nil || tableName == "" || len(columnNames) == 0 || len(rows) == 0 {
 		return fmt.Errorf("invalid arguments to execute bulk insert")
 	}

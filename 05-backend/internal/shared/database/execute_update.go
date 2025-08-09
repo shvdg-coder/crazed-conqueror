@@ -8,7 +8,7 @@ import (
 )
 
 // UpdateOne executes an update query and returns the updated record
-func UpdateOne[T any](ctx context.Context, db DatabaseConn, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
+func UpdateOne[T any](ctx context.Context, db Connection, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
 
 	if ctx == nil || script == "" || len(arguments) == 0 || scan == nil {
@@ -27,7 +27,7 @@ func UpdateOne[T any](ctx context.Context, db DatabaseConn, script string, argum
 }
 
 // UpdateMany executes multiple update queries using a batch
-func UpdateMany(ctx context.Context, db DatabaseConn, script string, rows [][]any) error {
+func UpdateMany(ctx context.Context, db Connection, script string, rows [][]any) error {
 	if ctx == nil || script == "" || len(rows) == 0 {
 		return fmt.Errorf("invalid arguments to execute batch update")
 	}

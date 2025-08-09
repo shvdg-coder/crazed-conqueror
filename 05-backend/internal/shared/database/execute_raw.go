@@ -6,7 +6,7 @@ import (
 )
 
 // ExecuteRaw executes a script with optional arguments and returns no value
-func ExecuteRaw(ctx context.Context, db DatabaseConn, script string, arguments ...any) error {
+func ExecuteRaw(ctx context.Context, db Connection, script string, arguments ...any) error {
 	if ctx == nil || script == "" {
 		return fmt.Errorf("invalid arguments to execute script")
 	}
