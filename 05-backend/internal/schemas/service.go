@@ -4,17 +4,12 @@ import (
 	"context"
 	"fmt"
 	"shvdg/crazed-conquerer/internal/shared/database"
-	"shvdg/crazed-conquerer/internal/user/infrastructure"
 )
 
 // Service manages connection schemas across all domains.
 type Service struct {
 	connection database.Connection
 	schemas    []database.DomainSchema
-}
-
-func NewDefaultService(connection database.Connection) *Service {
-	return NewService(connection, infrastructure.NewUserSchema(connection))
 }
 
 // NewService creates a new schema service instance.
@@ -45,4 +40,9 @@ func (s *Service) DropAllTables(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// AddSchema adds a new domain schema to the service.
+func (s *Service) AddSchema(schema database.DomainSchema) {
+	s.schemas = append(s.schemas, schema)
 }

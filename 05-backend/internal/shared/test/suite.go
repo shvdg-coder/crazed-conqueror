@@ -61,11 +61,7 @@ func NewTestSuite() *Suite {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}
 
-	sch := schemas.NewDefaultService(db)
-	err = sch.CreateAllTables(ctx)
-	if err != nil {
-		log.Fatalf("failed to create tables: %s", err.Error())
-	}
+	sch := schemas.NewService(db)
 
 	return &Suite{
 		Context:    ctx,

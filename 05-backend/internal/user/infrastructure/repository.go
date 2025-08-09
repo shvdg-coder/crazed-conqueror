@@ -10,16 +10,12 @@ import (
 // UserRepositoryImpl provides the concrete implementation of the UserRepository interface
 type UserRepositoryImpl struct {
 	connection database.Connection
-	table      string
-	fields     []string
 }
 
 // NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
 func NewUserRepositoryImpl(connection database.Connection) domain.UserRepository {
 	return &UserRepositoryImpl{
 		connection: connection,
-		table:      "users",
-		fields:     []string{"id", "email", "password", "display_name", "last_login_at", "created_at", "updated_at"},
 	}
 }
 
@@ -42,14 +38,12 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 	}
 
 	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		query := sql.BuildInsertQuery(s.table, s.fields)
+		fields := []string{fieldId, fieldEmail, fieldPassword, fieldDisplayName, fieldLastLoginAt, fieldCreatedAt, fieldUpdatedAt}
+		query := sql.BuildInsertQuery(tableName, fields)
 
 		argumentSets := make([][]any, len(entities))
 		for i, entity := range entities {
-			argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(),
-				entity.GetDisplayName(), entity.GetLastLoginAt(),
-				entity.GetCreatedAt(), entity.GetUpdatedAt(),
-			}
+			argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
 		}
 
 		return database.Batch(ctx, executor, query, argumentSets)
