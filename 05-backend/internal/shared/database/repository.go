@@ -4,18 +4,14 @@ import "context"
 
 // Repository defines the interface for database repositories.
 type Repository[T any] interface {
-	CreateOne(context.Context, T) error
-	ReadOne(context.Context, string, []string, ScannerFunc[T]) (T, error)
-	UpdateOne(context.Context, T) error
-	DeleteOne(context.Context, T) error
+	Create(ctx context.Context, entities ...T) error
+	Update(ctx context.Context, entities ...T) error
+	Delete(ctx context.Context, entities ...T) error
 
-	CreateMany(context.Context, []T) error
-	ReadMany(context.Context, string, []string, ScannerFunc[T]) (T, error)
-	UpdateMany(context.Context, []T) error
-	DeleteMany(context.Context, []T) error
+	ReadOne(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
+	ReadMany(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
+	Count(ctx context.Context, query string, values []any) (int, error)
 
-	Count(context.Context, string, []string) (int, error)
-
-	CreateTable(context.Context) error
-	DropTable(context.Context) error
+	CreateTable(ctx context.Context) error
+	DropTable(ctx context.Context) error
 }
