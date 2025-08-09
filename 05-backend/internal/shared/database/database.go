@@ -1,9 +1,10 @@
-package services
+package database
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -45,9 +46,9 @@ func WithConnection() DatabaseSvcOpt {
 }
 
 // Connect establishes a database connection using only pgx
-func (d *DatabaseSvc) Connect() error {
-	if d.driverName != "postgres" {
-		return fmt.Errorf("unsupported driver: %s; pgx only supports postgres", d.driverName)
+func (db *DatabaseSvc) Connect() error {
+	if db.driverName != "postgres" {
+		return fmt.Errorf("unsupported driver: %s; pgx only supports postgres", db.driverName)
 	}
 
 	var lastErr error
@@ -57,7 +58,7 @@ func (d *DatabaseSvc) Connect() error {
 			time.Sleep(retryDelay)
 		}
 
-		pgxConf, err := pgxpool.ParseConfig(d.dsn)
+		pgxConf, err := pgxpool.ParseConfig(db.dsn)
 
 		if err != nil {
 			lastErr = fmt.Errorf("failed to parse pgx config: %w", err)
@@ -79,7 +80,7 @@ func (d *DatabaseSvc) Connect() error {
 			continue
 		}
 
-		d.Pool = pool
+		db.Pool = pool
 		log.Print("successfully connected to database")
 		return nil
 	}
@@ -88,25 +89,34 @@ func (d *DatabaseSvc) Connect() error {
 }
 
 // Disconnect cleans up resources
-func (d *DatabaseSvc) Disconnect() error {
-	if d.Pool != nil {
-		d.Pool.Close()
+func (db *DatabaseSvc) Disconnect() error {
+	if db.Pool != nil {
+		db.Pool.Close()
 	}
 	return nil
 }
 
 // GetPool returns the pgx pool connection
-func (d *DatabaseSvc) GetPool() *pgxpool.Pool {
-	return d.Pool
+func (db *DatabaseSvc) GetPool() *pgxpool.Pool {
+	return db.Pool
 }
 
-// ExecuteQueries executes a list of SQL queries
-func (d *DatabaseSvc) ExecuteQueries(queries []string) error {
-	for _, query := range queries {
-		if _, err := d.Pool.Exec(context.Background(), query); err != nil {
-			log.Printf("Failed to execute query: %s, error: %v", query, err)
-			return err
+// GetExecutor returns either the transaction or connection as the executor for a query.
+func (db *DatabaseSvc) GetExecutor(ctx context.Context) (DatabaseExec, func(), error) {
+	var executor DatabaseExec
+	var cleanup func()
+
+	if tx := contexts.GetTransaction(ctx); tx != nil {
+		executor = tx
+		cleanup = func() {}
+	} else {
+		conn, err := db.GetPool().Acquire(ctx)
+		if err != nil {
+			return nil, nil, err
 		}
+		executor = conn.Conn()
+		cleanup = conn.Release
 	}
-	return nil
+
+	return executor, cleanup, nil
 }
