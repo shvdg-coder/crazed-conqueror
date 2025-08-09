@@ -2,6 +2,6 @@ package test
 
 const (
 	RootDirectory    = "05-backend"
-	EnvFile          = ".tst.env"
+	EnvFilePath      = ".tst.env"
 	DockerfileServer = "Dockerfile.tst.Server"
 )

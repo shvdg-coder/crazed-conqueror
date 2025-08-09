@@ -8,8 +8,10 @@ import (
 	"shvdg/crazed-conquerer/internal/shared/containers"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/environment"
+	"shvdg/crazed-conquerer/internal/shared/paths"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/joho/godotenv"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/network"
 )
@@ -27,6 +29,14 @@ type Suite struct {
 	Schemas  *schemas.Service
 }
 
+// init loads environment variables from the .tst.env file.
+func init() {
+	err := godotenv.Load(paths.ResolvePath(RootDirectory, EnvFilePath))
+	if err != nil {
+		log.Fatalf("Failed to read .tst.env: %v", err)
+	}
+}
+
 // NewTestSuite prepares a suite to be used throughout multiple tests.
 func NewTestSuite() *Suite {
 	ctx := context.Background()
@@ -36,13 +46,7 @@ func NewTestSuite() *Suite {
 		log.Fatalf("failed to create network: %s", err)
 	}
 
-	// Create container configuration
-	config := &containers.ContainerConfig{
-		RootDirectory:  RootDirectory,
-		Network:        net.Name,
-		EnvFilePath:    EnvFile,
-		DockerfilePath: DockerfileServer,
-	}
+	config := createDefaultConfig(net.Name)
 
 	postgres, err := containers.NewPostgresContainer(ctx, config)
 	if err != nil {
@@ -56,7 +60,7 @@ func NewTestSuite() *Suite {
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
 
-	db, err := database.NewService(containers.DriverName, dsn, database.WithConnection(ctx))
+	db, err := database.NewService(environment.EnvStr(environment.KeyDbDriver), dsn, database.WithConnection(ctx))
 	if err != nil {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}
@@ -74,13 +78,38 @@ func NewTestSuite() *Suite {
 	}
 }
 
+// createDefaultConfig creates a default container configuration.
+func createDefaultConfig(network string) *containers.ContainerConfig {
+	return &containers.ContainerConfig{
+		RootDirectory:  RootDirectory,
+		Network:        network,
+		EnvFilePath:    EnvFilePath,
+		DockerfilePath: DockerfileServer,
+	}
+}
+
+// AddSchema adds a schema to the suite.
+func (s *Suite) AddSchema(schema database.DomainSchema) {
+	s.Schemas.AddSchema(schema)
+}
+
+// CreateAllTables creates all registered domain tables.
+func (s *Suite) CreateAllTables(ctx context.Context) error {
+	return s.Schemas.CreateAllTables(ctx)
+}
+
+// DropAllTables drops all registered domain tables in reverse order.
+func (s *Suite) DropAllTables(ctx context.Context) error {
+	return s.Schemas.DropAllTables(ctx)
+}
+
 // Terminate clears up resources.
 func (s *Suite) Terminate() {
 	if s.Server != nil {
 		s.Server.Terminate()
 	}
 	if s.Postgres != nil {
-		_ = s.Schemas.DropAllTables(s.Context)
+		_ = s.DropAllTables(s.Context)
 		s.Postgres.Terminate()
 	}
 	if s.Network != nil {
