@@ -1,10 +1,12 @@
-package infrastructure
+package integration
 
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/testing"
+	"shvdg/crazed-conquerer/internal/shared/testing/integration"
 	"shvdg/crazed-conquerer/internal/user/domain"
+	"shvdg/crazed-conquerer/internal/user/infrastructure"
 
 	"github.com/jackc/pgx/v5"
 	. "github.com/onsi/ginkgo/v2"
@@ -17,15 +19,15 @@ var _ = Describe("User Repository", Ordered, func() {
 	var ctx context.Context
 
 	var suite *testing.Suite
-	var userRepo *UserRepositoryImpl
+	var userRepo *infrastructure.UserRepositoryImpl
 
 	BeforeAll(func() {
-		suite = testing.GetSharedSuite()
+		suite = integration.GetSharedSuite()
 		transaction, err = suite.StartTransaction()
 		Expect(err).ToNot(HaveOccurred(), "failed to start transaction")
 
 		ctx = contexts.SetTransaction(suite.Context, transaction)
-		userRepo = NewUserRepositoryImpl(suite.Database)
+		userRepo = infrastructure.NewUserRepositoryImpl(suite.Database)
 	})
 
 	AfterAll(func() {

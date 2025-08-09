@@ -8,8 +8,8 @@
 .github
 
 # Test directories
-05-backend/internal/shared/test/*
 */tests/*
+*/testing/*
 
 # Docs/examples
 *.sh

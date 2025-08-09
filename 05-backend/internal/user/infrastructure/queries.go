@@ -19,7 +19,7 @@ const (
 const (
 	// Table management
 	createTableQuery = `
-		CREATE TABLE IF NOT EXISTS users (
+		CREATE TABLE IF NOT EXISTS ` + tableName + ` (
 			` + fieldId + ` VARCHAR(255) PRIMARY KEY,
 			` + fieldEmail + ` VARCHAR(255) UNIQUE NOT NULL,
 			` + fieldPassword + ` VARCHAR(255) NOT NULL,
@@ -30,5 +30,5 @@ const (
 		);
 	`
 
-	dropTableQuery = `DROP TABLE IF EXISTS users CASCADE;`
+	dropTableQuery = `DROP TABLE IF EXISTS ` + tableName + ` CASCADE;`
 )
