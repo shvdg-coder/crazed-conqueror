@@ -1,0 +1,69 @@
+# --------- Stage 1: Prepare patch files via Go modules ---------
+FROM golang:1.24-alpine AS patch-puller
+
+RUN apk add --no-cache git
+
+WORKDIR /src
+
+RUN go mod init tempmod && go get github.com/alta/protopatch@v0.5.3
+
+# --------- Stage 2: Build proto Go files ---------
+FROM golang:1.24-alpine AS proto-go
+
+RUN apk add --no-cache protobuf protobuf-dev bash
+
+WORKDIR /src
+
+COPY proto ./proto
+COPY --from=patch-puller /go/pkg/mod/github.com/alta/protopatch@v0.5.3/patch ./protopatch/patch
+
+RUN go install github.com/alta/protopatch/cmd/protoc-gen-go-patch@v0.5.3
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6
+
+ENV PROTO_PATCH_PATH=/src/protopatch
+ENV PROTOC_INCLUDE=/usr/include
+
+RUN mkdir -p /proto-go-out
+
+RUN protoc \
+    --proto_path=proto \
+    --proto_path="$PROTO_PATCH_PATH" \
+    --proto_path="$PROTO_PATCH_PATH/patch" \
+    --proto_path="$GOPATH/pkg/mod" \
+    --proto_path="$PROTOC_INCLUDE" \
+    --go-patch_out=plugin=go,paths=source_relative:/proto-go-out \
+    proto/*.proto
+
+# --------- Stage 3: Build proto Dart files ---------
+FROM dart:3.8-sdk as proto-dart
+
+RUN apt-get update && apt-get install -y protobuf-compiler findutils
+
+WORKDIR /src
+
+COPY proto ./proto
+COPY --from=patch-puller /go/pkg/mod/github.com/alta/protopatch@v0.5.3/patch ./protopatch/patch
+
+RUN dart pub global activate protoc_plugin
+ENV PATH="$PATH:/root/.pub-cache/bin"
+
+RUN mkdir -p /proto-dart-out
+
+RUN find /usr/include/google/protobuf -name "*.proto" > google_wkt.txt
+
+RUN protoc \
+    --proto_path=proto \
+    --proto_path=protopatch \
+    --proto_path=protopatch/patch \
+    --proto_path=/usr/include \
+    --dart_out=/proto-dart-out \
+    proto/*.proto \
+    $(cat google_wkt.txt)
+
+# --------- Stage 4: Export artifacts ---------
+FROM alpine:3.21
+
+WORKDIR /artifacts
+
+COPY --from=proto-go /proto-go-out ./go/
+COPY --from=proto-dart /proto-dart-out ./dart/
