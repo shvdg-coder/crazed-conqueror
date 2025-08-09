@@ -13,7 +13,7 @@ type UserRepositoryImpl struct {
 }
 
 // NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
-func NewUserRepositoryImpl(connection database.Connection) domain.UserRepository {
+func NewUserRepositoryImpl(connection database.Connection) *UserRepositoryImpl {
 	return &UserRepositoryImpl{
 		connection: connection,
 	}

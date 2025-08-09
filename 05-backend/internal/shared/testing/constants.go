@@ -1,7 +1,7 @@
-package test
+package testing
 
 const (
 	RootDirectory    = "05-backend"
 	EnvFilePath      = ".tst.env"
-	DockerfileServer = "Dockerfile.tst.Server"
+	DockerfileServer = "Dockerfile.tst.server"
 )

@@ -34,7 +34,7 @@ func NewServerContainer(ctx context.Context, config *ContainerConfig) (*ServerCo
 
 	container, err := testcontainers.GenericContainer(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to start API container: %w", err)
+		return nil, fmt.Errorf("failed to start server container: %w", err)
 	}
 
 	host, err := container.Host(ctx)

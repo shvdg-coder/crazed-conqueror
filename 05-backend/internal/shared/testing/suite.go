@@ -1,4 +1,4 @@
-package test
+package testing
 
 import (
 	"context"
@@ -55,7 +55,7 @@ func NewTestSuite() *Suite {
 
 	server, err := containers.NewServerContainer(ctx, config)
 	if err != nil {
-		log.Fatalf("failed to setup API container: %s", err.Error())
+		log.Fatalf("failed to setup server container: %s", err.Error())
 	}
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
@@ -81,8 +81,8 @@ func NewTestSuite() *Suite {
 // createDefaultConfig creates a default container configuration.
 func createDefaultConfig(network string) *containers.ContainerConfig {
 	return &containers.ContainerConfig{
-		RootDirectory:  RootDirectory,
 		Network:        network,
+		RootDirectory:  RootDirectory,
 		EnvFilePath:    EnvFilePath,
 		DockerfilePath: DockerfileServer,
 	}
