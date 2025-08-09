@@ -49,7 +49,7 @@ var _ = Describe("Postgres Container Tests", Ordered, func() {
 	Context("When the database is pinged", func() {
 		It("should not return with an error", func() {
 			dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
-			dbSvc, err := database.NewService(DriverName, dsn, database.WithConnection())
+			dbSvc, err := database.NewService(DriverName, dsn, database.WithConnection(ctx))
 			Expect(err).NotTo(HaveOccurred(), "Failed to create database service")
 
 			err = dbSvc.Pool.Ping(ctx)

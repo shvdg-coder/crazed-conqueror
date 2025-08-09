@@ -39,14 +39,14 @@ func NewService(driverName, dsn string, options ...ServiceOpt) (*Service, error)
 }
 
 // WithConnection establishes an initial database connection using pgx
-func WithConnection() ServiceOpt {
+func WithConnection(ctx context.Context) ServiceOpt {
 	return func(s *Service) error {
-		return s.Connect()
+		return s.Connect(ctx)
 	}
 }
 
 // Connect establishes a database connection using only pgx
-func (db *Service) Connect() error {
+func (db *Service) Connect(ctx context.Context) error {
 	if db.driverName != "postgres" {
 		return fmt.Errorf("unsupported driver: %s; pgx only supports postgres", db.driverName)
 	}
@@ -61,7 +61,7 @@ func (db *Service) Connect() error {
 			time.Sleep(retryDelay)
 		}
 
-		if pool, err := db.connectAttempt(); err != nil {
+		if pool, err := db.connectAttempt(ctx); err != nil {
 			lastErr = err
 			log.Print(lastErr)
 			continue
@@ -76,18 +76,18 @@ func (db *Service) Connect() error {
 }
 
 // connectAttempt attempts to connect to the database
-func (db *Service) connectAttempt() (*pgxpool.Pool, error) {
+func (db *Service) connectAttempt(ctx context.Context) (*pgxpool.Pool, error) {
 	pgxConf, err := pgxpool.ParseConfig(db.dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pgx config: %w", err)
 	}
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), pgxConf)
+	pool, err := pgxpool.NewWithConfig(ctx, pgxConf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pgx pool: %w", err)
 	}
 
-	if err = pool.Ping(context.Background()); err != nil {
+	if err = pool.Ping(ctx); err != nil {
 		pool.Close()
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}

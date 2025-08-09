@@ -37,7 +37,7 @@ func NewTestSuite() *Suite {
 	}
 
 	// Create container configuration
-	config := containers.ContainerConfig{
+	config := &containers.ContainerConfig{
 		RootDirectory:  RootDirectory,
 		Network:        net.Name,
 		EnvFilePath:    EnvFile,
@@ -56,7 +56,7 @@ func NewTestSuite() *Suite {
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
 
-	db, err := database.NewService(containers.DriverName, dsn, database.WithConnection())
+	db, err := database.NewService(containers.DriverName, dsn, database.WithConnection(ctx))
 	if err != nil {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}

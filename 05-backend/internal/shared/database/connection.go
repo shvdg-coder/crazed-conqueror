@@ -9,7 +9,7 @@ import (
 
 // Connection defines the interface for database connections.
 type Connection interface {
-	Connect() error
+	Connect(ctx context.Context) error
 	Disconnect() error
 	GetPool() *pgxpool.Pool
 	GetExecutor(ctx context.Context) (Executor, func(), error)
