@@ -3,18 +3,25 @@ package infrastructure
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/user/domain"
 )
 
 // UserRepositoryImpl provides the concrete implementation of the UserRepository interface
 type UserRepositoryImpl struct {
 	executor database.Executor
+	table    string
+	fields   []string
 }
 
 // NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
 func NewUserRepositoryImpl(executor database.Executor) domain.UserRepository {
 	// TODO: Implementation
-	return nil
+	return &UserRepositoryImpl{
+		executor: executor,
+		table:    "users",
+		fields:   []string{"id", "email", "password", "display_name", "last_login_at", "created_at", "updated_at"},
+	}
 }
 
 // GetByEmail retrieves a user by their email address
@@ -31,8 +38,21 @@ func (r *UserRepositoryImpl) Authenticate(email, password string) (*domain.UserE
 
 // Create inserts one or more user entities into the database
 func (r *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.UserEntity) error {
-	// TODO: Implementation
-	return nil
+	if len(entities) == 0 {
+		return nil
+	}
+
+	query := sql.BuildInsertQuery(r.table, r.fields)
+
+	argumentSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(),
+			entity.GetDisplayName(), entity.GetLastLoginAt(),
+			entity.GetCreatedAt(), entity.GetUpdatedAt(),
+		}
+	}
+
+	return database.Batch(ctx, r.executor, query, argumentSets)
 }
 
 // Update modifies one or more user entities in the database
@@ -49,13 +69,11 @@ func (r *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Use
 
 // ReadOne executes a query and returns a single user entity
 func (r *UserRepositoryImpl) ReadOne(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	// TODO: Implementation
 	return nil, nil
 }
 
 // ReadMany executes a query and returns multiple user entities
 func (r *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	// TODO: Implementation
 	return nil, nil
 }
 

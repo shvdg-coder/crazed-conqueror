@@ -8,7 +8,7 @@
 .github
 
 # Test directories
-*/test/*
+05-backend/internal/shared/test/*
 */tests/*
 
 # Docs/examples
