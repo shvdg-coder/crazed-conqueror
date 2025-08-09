@@ -33,9 +33,10 @@ func GetDirectoryRoot(directoryName string) string {
 	}
 
 	for {
-		if filepath.Base(dir) == directoryName {
-			dirCache[directoryName] = dir
-			return dir
+		targetPath := filepath.Join(dir, directoryName)
+		if _, err := os.Stat(targetPath); err == nil {
+			dirCache[directoryName] = targetPath
+			return targetPath
 		}
 
 		parent := filepath.Dir(dir)
