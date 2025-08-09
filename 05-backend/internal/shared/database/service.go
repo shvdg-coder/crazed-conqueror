@@ -51,6 +51,9 @@ func (db *Service) Connect() error {
 		return fmt.Errorf("unsupported driver: %s; pgx only supports postgres", db.driverName)
 	}
 
+	log.Printf("waiting for database to initialize...")
+	time.Sleep(time.Second * 2)
+
 	var lastErr error
 	for i := 0; i < maxAttempts; i++ {
 		if i > 0 {
@@ -58,34 +61,38 @@ func (db *Service) Connect() error {
 			time.Sleep(retryDelay)
 		}
 
-		pgxConf, err := pgxpool.ParseConfig(db.dsn)
-
-		if err != nil {
-			lastErr = fmt.Errorf("failed to parse pgx config: %w", err)
+		if pool, err := db.connectAttempt(); err != nil {
+			lastErr = err
 			log.Print(lastErr)
 			continue
+		} else {
+			db.Pool = pool
+			log.Print("successfully connected to database")
+			return nil
 		}
-
-		pool, err := pgxpool.NewWithConfig(context.Background(), pgxConf)
-		if err != nil {
-			lastErr = fmt.Errorf("failed to create pgx pool: %w", err)
-			log.Print(lastErr)
-			continue
-		}
-
-		if err = pool.Ping(context.Background()); err != nil {
-			lastErr = fmt.Errorf("failed to ping database: %w", err)
-			log.Print(lastErr)
-			pool.Close()
-			continue
-		}
-
-		db.Pool = pool
-		log.Print("successfully connected to database")
-		return nil
 	}
 
 	return fmt.Errorf("failed to connect to database after %d attempts: %w", maxAttempts, lastErr)
+}
+
+// connectAttempt attempts to connect to the database
+func (db *Service) connectAttempt() (*pgxpool.Pool, error) {
+	pgxConf, err := pgxpool.ParseConfig(db.dsn)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse pgx config: %w", err)
+	}
+
+	pool, err := pgxpool.NewWithConfig(context.Background(), pgxConf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create pgx pool: %w", err)
+	}
+
+	if err = pool.Ping(context.Background()); err != nil {
+		pool.Close()
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	return pool, nil
 }
 
 // Disconnect cleans up resources
