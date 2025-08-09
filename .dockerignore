@@ -1,0 +1,27 @@
+# Ignore git history
+.git
+.gitignore
+
+# Editor & tools
+.vscode
+.idea
+.github
+
+# Test directories
+*/test/*
+*/tests/*
+
+# Docs/examples
+*.sh
+*.md
+
+# Cache files
+*.log
+
+# Local environment files
+.env*
+
+# Configs
+*.Dockerfile
+Dockerfile.*
+docker-compose*.yaml

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package models;
+
+option go_package = "backend/internal/models;models";
+
+import "google/protobuf/timestamp.proto";
+
+// Message for User
+message UserEntity {
+  string id = 1;
+  string email = 2;
+  string password = 3;
+  string display_name = 4;
+
+  google.protobuf.Timestamp last_login_at = 7;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}

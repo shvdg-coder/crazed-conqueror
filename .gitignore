@@ -1,0 +1,10 @@
+.idea
+*.bin
+*.crt
+.junie
+*/temp
+*/tmp
+*tmp
+.run
+.env*
+!.env.example
