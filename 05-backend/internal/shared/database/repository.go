@@ -10,9 +10,11 @@ type Repository[T any] interface {
 	DeleteOne(context.Context, T) error
 
 	CreateMany(context.Context, []T) error
-	ReadMany(context.Context, []string, ScannerFunc[T]) (T, error)
+	ReadMany(context.Context, string, []string, ScannerFunc[T]) (T, error)
 	UpdateMany(context.Context, []T) error
 	DeleteMany(context.Context, []T) error
+
+	Count(context.Context, string, []string) (int, error)
 
 	CreateTable(context.Context) error
 	DropTable(context.Context) error

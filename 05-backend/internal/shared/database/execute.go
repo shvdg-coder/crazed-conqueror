@@ -21,6 +21,22 @@ func Execute(ctx context.Context, executor Executor, script string, arguments ..
 	return nil
 }
 
+// Count executes a script with optional arguments and returns the number of rows affected
+func Count(ctx context.Context, executor Executor, script string, arguments ...any) (int, error) {
+	var count int
+	if ctx == nil || script == "" {
+		return count, fmt.Errorf("invalid arguments to count rows")
+	}
+
+	row := executor.QueryRow(ctx, script, arguments...)
+	err := row.Scan(&count)
+	if err != nil {
+		return count, fmt.Errorf("failed to execute command: %w", err)
+	}
+
+	return count, nil
+}
+
 // QueryOne executes a script with arguments and returns a single scanned value
 func QueryOne[T any](ctx context.Context, executor Executor, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
