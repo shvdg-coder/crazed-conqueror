@@ -8,18 +8,12 @@ import (
 )
 
 // Execute executes a script with optional arguments and returns no value
-func Execute(ctx context.Context, db Connection, script string, arguments ...any) error {
+func Execute(ctx context.Context, executor Executor, script string, arguments ...any) error {
 	if ctx == nil || script == "" {
 		return fmt.Errorf("invalid arguments to execute script")
 	}
 
-	executor, cleanup, err := db.GetExecutor(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get executor: %w", err)
-	}
-	defer cleanup()
-
-	_, err = executor.Exec(ctx, script, arguments...)
+	_, err := executor.Exec(ctx, script, arguments...)
 	if err != nil {
 		return fmt.Errorf("failed to execute command: %w", err)
 	}
@@ -28,18 +22,12 @@ func Execute(ctx context.Context, db Connection, script string, arguments ...any
 }
 
 // QueryOne executes a script with arguments and returns a single scanned value
-func QueryOne[T any](ctx context.Context, db Connection, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
+func QueryOne[T any](ctx context.Context, executor Executor, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
 
 	if ctx == nil || script == "" || scan == nil {
 		return zero, fmt.Errorf("invalid arguments to query single result")
 	}
-
-	executor, cleanup, err := db.GetExecutor(ctx)
-	if err != nil {
-		return zero, fmt.Errorf("failed to get executor: %w", err)
-	}
-	defer cleanup()
 
 	row := executor.QueryRow(ctx, script, arguments...)
 
@@ -47,17 +35,11 @@ func QueryOne[T any](ctx context.Context, db Connection, script string, argument
 }
 
 // QueryMany executes a script with arguments and returns a slice of scanned values
-func QueryMany[T any](ctx context.Context, db Connection, script string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
+func QueryMany[T any](ctx context.Context, executor Executor, script string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
 	var zero []T
 	if ctx == nil || script == "" || scan == nil {
 		return zero, fmt.Errorf("invalid arguments to query multiple results")
 	}
-
-	executor, cleanup, err := db.GetExecutor(ctx)
-	if err != nil {
-		return zero, fmt.Errorf("failed to get executor: %w", err)
-	}
-	defer cleanup()
 
 	rows, err := executor.Query(ctx, script, arguments...)
 	if err != nil {
@@ -79,16 +61,10 @@ func QueryMany[T any](ctx context.Context, db Connection, script string, argumen
 }
 
 // Batch executes multiple instances of the same script with different arguments
-func Batch(ctx context.Context, db Connection, script string, argumentSets [][]any) error {
+func Batch(ctx context.Context, executor Executor, script string, argumentSets [][]any) error {
 	if ctx == nil || script == "" || len(argumentSets) == 0 {
 		return fmt.Errorf("invalid arguments to execute batch")
 	}
-
-	executor, cleanup, err := db.GetExecutor(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get executor: %w", err)
-	}
-	defer cleanup()
 
 	batch := &pgx.Batch{}
 
@@ -97,7 +73,7 @@ func Batch(ctx context.Context, db Connection, script string, argumentSets [][]a
 	}
 
 	results := executor.SendBatch(ctx, batch)
-	err = results.Close()
+	err := results.Close()
 	if err != nil {
 		return fmt.Errorf("failed to execute batch: %w", err)
 	}
