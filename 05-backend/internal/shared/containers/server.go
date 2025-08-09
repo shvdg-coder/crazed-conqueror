@@ -29,7 +29,7 @@ func (c *ServerContainer) Terminate() {
 }
 
 // NewServerContainer starts the API Server container for testing.
-func NewServerContainer(ctx context.Context, config ContainerConfig) (*ServerContainer, error) {
+func NewServerContainer(ctx context.Context, config *ContainerConfig) (*ServerContainer, error) {
 	req := createServerContainerRequest(config)
 
 	container, err := testcontainers.GenericContainer(ctx, req)
@@ -58,7 +58,7 @@ func NewServerContainer(ctx context.Context, config ContainerConfig) (*ServerCon
 }
 
 // createServerContainerRequest creates a request to run the API Server container.
-func createServerContainerRequest(config ContainerConfig) testcontainers.GenericContainerRequest {
+func createServerContainerRequest(config *ContainerConfig) testcontainers.GenericContainerRequest {
 	envMap, err := godotenv.Read(paths.ResolvePath(config.GetRootDir(), config.GetEnvFilePath()))
 	if err != nil {
 		panic(fmt.Sprintf("Failed to read %s: %v", config.GetEnvFilePath(), err))

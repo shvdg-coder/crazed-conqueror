@@ -30,7 +30,7 @@ func (c *PostgresContainer) Terminate() {
 }
 
 // NewPostgresContainer starts a PostgreSQL container for testing.
-func NewPostgresContainer(ctx context.Context, config ContainerConfig) (*PostgresContainer, error) {
+func NewPostgresContainer(ctx context.Context, config *ContainerConfig) (*PostgresContainer, error) {
 	req := createPostgresContainerRequest(config)
 
 	container, err := testcontainers.GenericContainer(ctx, req)
@@ -56,7 +56,7 @@ func NewPostgresContainer(ctx context.Context, config ContainerConfig) (*Postgre
 }
 
 // createPostgresContainerRequest creates a request to run a PostgreSQL container.
-func createPostgresContainerRequest(config ContainerConfig) testcontainers.GenericContainerRequest {
+func createPostgresContainerRequest(config *ContainerConfig) testcontainers.GenericContainerRequest {
 	err := godotenv.Load(paths.ResolvePath(config.GetRootDir(), config.GetEnvFilePath()))
 	if err != nil {
 		panic(fmt.Sprintf("Failed to read %s: %v", config.GetEnvFilePath(), err))
