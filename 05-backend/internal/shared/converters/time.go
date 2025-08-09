@@ -1,4 +1,4 @@
-package convertors
+package converters
 
 import (
 	"time"

@@ -2,7 +2,7 @@ package domain
 
 import (
 	"fmt"
-	"shvdg/crazed-conquerer/internal/shared/convertors"
+	"shvdg/crazed-conquerer/internal/shared/converters"
 	"time"
 
 	fake "github.com/brianvoe/gofakeit/v6"
@@ -75,25 +75,25 @@ func (b *UserEntityBuilder) WithRandomDisplayName() *UserEntityBuilder {
 
 // WithLastLoginAt sets the last login time of the user entity.
 func (b *UserEntityBuilder) WithLastLoginAt(t time.Time) *UserEntityBuilder {
-	b.userEntity.LastLoginAt = convertors.TimeToTimestamp(t)
+	b.userEntity.LastLoginAt = converters.TimeToTimestamp(t)
 	return b
 }
 
 // WithCreatedAt sets the creation time of the user entity.
 func (b *UserEntityBuilder) WithCreatedAt(t time.Time) *UserEntityBuilder {
-	b.userEntity.CreatedAt = convertors.TimeToTimestamp(t)
+	b.userEntity.CreatedAt = converters.TimeToTimestamp(t)
 	return b
 }
 
 // WithUpdatedAt sets the updated at time of the user entity.
 func (b *UserEntityBuilder) WithUpdatedAt(t time.Time) *UserEntityBuilder {
-	b.userEntity.UpdatedAt = convertors.TimeToTimestamp(t)
+	b.userEntity.UpdatedAt = converters.TimeToTimestamp(t)
 	return b
 }
 
 // WithDefaults populates all fields with random default values.
 func (b *UserEntityBuilder) WithDefaults() *UserEntityBuilder {
-	b.counter = NextUser()
+	b.counter = NextUserNumber()
 
 	now := time.Now()
 	return b.WithRandomId().
