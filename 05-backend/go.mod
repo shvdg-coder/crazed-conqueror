@@ -2,7 +2,12 @@ module shvdg/crazed-conquerer
 
 go 1.24
 
-require github.com/jackc/pgx/v5 v5.7.5
+require (
+	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/google/uuid v1.6.0
+	github.com/jackc/pgx/v5 v5.7.5
+	google.golang.org/protobuf v1.36.7
+)
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
