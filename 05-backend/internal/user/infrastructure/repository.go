@@ -67,12 +67,10 @@ func (r *UserRepositoryImpl) Count(ctx context.Context, query string, values []a
 
 // CreateTable creates the users-table in the database
 func (r *UserRepositoryImpl) CreateTable(ctx context.Context) error {
-	// TODO: Implementation
-	return nil
+	return database.Execute(ctx, r.executor, createTableQuery)
 }
 
 // DropTable removes the users-table from the database
 func (r *UserRepositoryImpl) DropTable(ctx context.Context) error {
-	// TODO: Implementation
-	return nil
+	return database.Execute(ctx, r.executor, dropTableQuery)
 }
