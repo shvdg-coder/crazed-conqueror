@@ -1,4 +1,4 @@
-package helpers
+package containers
 
 import (
 	"context"
@@ -28,21 +28,21 @@ func (c *ServerContainer) Terminate() {
 	}
 }
 
-// SetupServerContainer starts the API Server container for testing.
-func SetupServerContainer(ctx context.Context, network string) (*ServerContainer, error) {
-	req := createServerContainerRequest(network)
+// NewServerContainer starts the API Server container for testing.
+func NewServerContainer(ctx context.Context, config ContainerConfig) (*ServerContainer, error) {
+	req := createServerContainerRequest(config)
 
-	apiContainer, err := testcontainers.GenericContainer(ctx, req)
+	container, err := testcontainers.GenericContainer(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to start API container: %w", err)
 	}
 
-	host, err := apiContainer.Host(ctx)
+	host, err := container.Host(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container host: %w", err)
 	}
 
-	port, err := apiContainer.MappedPort(ctx, nat.Port(environment.EnvStr(environment.KeyApiPort)))
+	port, err := container.MappedPort(ctx, nat.Port(environment.EnvStr(environment.KeyApiPort)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container port: %w", err)
 	}
@@ -50,7 +50,7 @@ func SetupServerContainer(ctx context.Context, network string) (*ServerContainer
 	url := fmt.Sprintf("http://%s:%s", host, port.Port())
 
 	return &ServerContainer{
-		Container: apiContainer,
+		Container: container,
 		Url:       url,
 		Host:      host,
 		Port:      port.Port(),
@@ -58,19 +58,19 @@ func SetupServerContainer(ctx context.Context, network string) (*ServerContainer
 }
 
 // createServerContainerRequest creates a request to run the API Server container.
-func createServerContainerRequest(network string) testcontainers.GenericContainerRequest {
-	envMap, err := godotenv.Read(paths.ResolvePath(RootDirectory, ".tst.env"))
+func createServerContainerRequest(config ContainerConfig) testcontainers.GenericContainerRequest {
+	envMap, err := godotenv.Read(paths.ResolvePath(config.GetRootDir(), config.GetEnvFilePath()))
 	if err != nil {
-		panic(fmt.Sprintf("Failed to read .tst.env: %v", err))
+		panic(fmt.Sprintf("Failed to read %s: %v", config.GetEnvFilePath(), err))
 	}
 
 	apiContainer := testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
-			Dockerfile: "Dockerfile.tst.Server",
-			Context:    paths.ResolvePath(RootDirectory, ""),
+			Dockerfile: config.GetDockerfilePath(),
+			Context:    paths.ResolvePath(config.GetRootDir(), ""),
 		},
-		Networks:       []string{network},
-		NetworkAliases: map[string][]string{network: {NetworkAliasApi}},
+		Networks:       []string{config.GetNetwork()},
+		NetworkAliases: map[string][]string{config.GetNetwork(): {NetworkAliasApi}},
 		ExposedPorts:   []string{environment.EnvStr(environment.KeyApiPort) + "/tcp"},
 		Env:            envMap,
 		WaitingFor: wait.ForLog("http Server started on").

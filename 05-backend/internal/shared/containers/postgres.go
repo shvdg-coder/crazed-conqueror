@@ -1,4 +1,4 @@
-package helpers
+package containers
 
 import (
 	"context"
@@ -29,13 +29,13 @@ func (c *PostgresContainer) Terminate() {
 	}
 }
 
-// SetupPostgresContainer starts a PostgreSQL container for testing.
-func SetupPostgresContainer(ctx context.Context, network string) (*PostgresContainer, error) {
-	req := createPostgresContainerRequest(network)
+// NewPostgresContainer starts a PostgreSQL container for testing.
+func NewPostgresContainer(ctx context.Context, config ContainerConfig) (*PostgresContainer, error) {
+	req := createPostgresContainerRequest(config)
 
 	container, err := testcontainers.GenericContainer(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to start posgres container: %w", err)
+		return nil, fmt.Errorf("failed to start postgres container: %w", err)
 	}
 
 	host, err := container.Host(ctx)
@@ -56,16 +56,16 @@ func SetupPostgresContainer(ctx context.Context, network string) (*PostgresConta
 }
 
 // createPostgresContainerRequest creates a request to run a PostgreSQL container.
-func createPostgresContainerRequest(network string) testcontainers.GenericContainerRequest {
-	err := godotenv.Load(paths.ResolvePath(RootDirectory, ".tst.env"))
+func createPostgresContainerRequest(config ContainerConfig) testcontainers.GenericContainerRequest {
+	err := godotenv.Load(paths.ResolvePath(config.GetRootDir(), config.GetEnvFilePath()))
 	if err != nil {
-		panic(fmt.Sprintf("Failed to read .tst.env: %v", err))
+		panic(fmt.Sprintf("Failed to read %s: %v", config.GetEnvFilePath(), err))
 	}
 
 	postgresContainer := testcontainers.ContainerRequest{
 		Image:          "postgres:17-alpine",
-		Networks:       []string{network},
-		NetworkAliases: map[string][]string{network: {NetworkAliasDb}},
+		Networks:       []string{config.GetNetwork()},
+		NetworkAliases: map[string][]string{config.GetNetwork(): {NetworkAliasDb}},
 		Env: map[string]string{
 			"POSTGRES_DB":       environment.EnvStr(environment.KeyDbName),
 			"POSTGRES_USER":     environment.EnvStr(environment.KeyDbUser),

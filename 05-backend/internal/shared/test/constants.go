@@ -1,9 +1,7 @@
-package helpers
+package test
 
 const (
-	DriverName      = "postgres"
-	NetworkAliasDb  = "postgres"
-	NetworkAliasApi = "api-Server"
-
-	RootDirectory = "05-backend"
+	RootDirectory    = "05-backend"
+	EnvFile          = ".tst.env"
+	DockerfileServer = "Dockerfile.tst.Server"
 )

@@ -1,10 +1,11 @@
-package helpers
+package test
 
 import (
 	"context"
 	"log"
 	"net/http"
 	"shvdg/crazed-conquerer/internal/schemas"
+	"shvdg/crazed-conquerer/internal/shared/containers"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/environment"
 
@@ -13,21 +14,21 @@ import (
 	"github.com/testcontainers/testcontainers-go/network"
 )
 
-// TestSuite provides common functionality for integration testing.
-type TestSuite struct {
+// Suite provides common functionality for integration testing.
+type Suite struct {
 	Context    context.Context
 	Network    *testcontainers.DockerNetwork
 	HttpClient *http.Client
 
-	Postgres *PostgresContainer
-	Server   *ServerContainer
+	Postgres *containers.PostgresContainer
+	Server   *containers.ServerContainer
 
 	Database *database.Service
 	Schemas  *schemas.Service
 }
 
-// SetupTestSuite prepares a suite to be used throughout multiple tests.
-func SetupTestSuite() *TestSuite {
+// NewTestSuite prepares a suite to be used throughout multiple tests.
+func NewTestSuite() *Suite {
 	ctx := context.Background()
 
 	net, err := network.New(ctx)
@@ -35,26 +36,38 @@ func SetupTestSuite() *TestSuite {
 		log.Fatalf("failed to create network: %s", err)
 	}
 
-	postgres, err := SetupPostgresContainer(ctx, net.Name)
+	// Create container configuration
+	config := containers.ContainerConfig{
+		RootDirectory:  RootDirectory,
+		Network:        net.Name,
+		EnvFilePath:    EnvFile,
+		DockerfilePath: DockerfileServer,
+	}
+
+	postgres, err := containers.NewPostgresContainer(ctx, config)
 	if err != nil {
 		log.Fatalf("failed to setup Postgres container: %s", err.Error())
 	}
 
-	server, err := SetupServerContainer(ctx, net.Name)
+	server, err := containers.NewServerContainer(ctx, config)
 	if err != nil {
 		log.Fatalf("failed to setup API container: %s", err.Error())
 	}
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
 
-	db, err := database.NewService(DriverName, dsn, database.WithConnection())
+	db, err := database.NewService(containers.DriverName, dsn, database.WithConnection())
 	if err != nil {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}
 
 	sch := schemas.NewDefaultService(db)
+	err = sch.CreateAllTables(ctx)
+	if err != nil {
+		log.Fatalf("failed to create tables: %s", err.Error())
+	}
 
-	return &TestSuite{
+	return &Suite{
 		Context:    ctx,
 		Network:    net,
 		HttpClient: &http.Client{},
@@ -66,7 +79,7 @@ func SetupTestSuite() *TestSuite {
 }
 
 // Terminate clears up resources.
-func (s *TestSuite) Terminate() {
+func (s *Suite) Terminate() {
 	if s.Server != nil {
 		s.Server.Terminate()
 	}
@@ -80,7 +93,7 @@ func (s *TestSuite) Terminate() {
 }
 
 // StartTransaction starts and returns a new transaction
-func (s *TestSuite) StartTransaction() (pgx.Tx, error) {
+func (s *Suite) StartTransaction() (pgx.Tx, error) {
 	return s.Database.GetPool().BeginTx(s.Context, pgx.TxOptions{
 		IsoLevel:       pgx.ReadCommitted,
 		AccessMode:     pgx.ReadWrite,

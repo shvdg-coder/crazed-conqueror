@@ -1,17 +1,28 @@
-package helpers
+package test
 
-import "sync"
+import (
+	"log"
+	"shvdg/crazed-conquerer/internal/shared/paths"
+	"sync"
+
+	"github.com/joho/godotenv"
+)
 
 var (
-	sharedTestSuite *TestSuite
+	sharedTestSuite *Suite
 	setupOnce       sync.Once
 	mutex           sync.RWMutex
 )
 
 // GetSharedTestSuite returns the shared test suite instance, creating it if necessary
-func GetSharedTestSuite() *TestSuite {
+func GetSharedTestSuite() *Suite {
 	setupOnce.Do(func() {
-		sharedTestSuite = SetupTestSuite()
+		err := godotenv.Load(paths.ResolvePath(RootDirectory, ".tst.env"))
+		if err != nil {
+			log.Fatalf("Failed to read .tst.env: %v", err)
+		}
+
+		sharedTestSuite = NewTestSuite()
 	})
 	return sharedTestSuite
 }
