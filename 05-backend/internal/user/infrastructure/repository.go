@@ -9,17 +9,17 @@ import (
 
 // UserRepositoryImpl provides the concrete implementation of the UserRepository interface
 type UserRepositoryImpl struct {
-	executor database.Executor
-	table    string
-	fields   []string
+	connection database.Connection
+	table      string
+	fields     []string
 }
 
 // NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
-func NewUserRepositoryImpl(executor database.Executor) domain.UserRepository {
+func NewUserRepositoryImpl(connection database.Connection) domain.UserRepository {
 	return &UserRepositoryImpl{
-		executor: executor,
-		table:    "users",
-		fields:   []string{"id", "email", "password", "display_name", "last_login_at", "created_at", "updated_at"},
+		connection: connection,
+		table:      "users",
+		fields:     []string{"id", "email", "password", "display_name", "last_login_at", "created_at", "updated_at"},
 	}
 }
 
@@ -41,17 +41,19 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	query := sql.BuildInsertQuery(s.table, s.fields)
+	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
+		query := sql.BuildInsertQuery(s.table, s.fields)
 
-	argumentSets := make([][]any, len(entities))
-	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(),
-			entity.GetDisplayName(), entity.GetLastLoginAt(),
-			entity.GetCreatedAt(), entity.GetUpdatedAt(),
+		argumentSets := make([][]any, len(entities))
+		for i, entity := range entities {
+			argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(),
+				entity.GetDisplayName(), entity.GetLastLoginAt(),
+				entity.GetCreatedAt(), entity.GetUpdatedAt(),
+			}
 		}
-	}
 
-	return database.Batch(ctx, s.executor, query, argumentSets)
+		return database.Batch(ctx, executor, query, argumentSets)
+	})
 }
 
 // Update modifies one or more user entities in the database
@@ -68,11 +70,13 @@ func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Use
 
 // ReadOne executes a query and returns a single user entity
 func (s *UserRepositoryImpl) ReadOne(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
+	// TODO: Implementation
 	return nil, nil
 }
 
 // ReadMany executes a query and returns multiple user entities
 func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
+	// TODO: Implementation
 	return nil, nil
 }
 

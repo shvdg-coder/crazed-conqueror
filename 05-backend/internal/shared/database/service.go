@@ -22,8 +22,8 @@ type Service struct {
 // ServiceOpt configures the Service during initialization
 type ServiceOpt func(*Service) error
 
-// NewDatabaseSvc initializes a new Service with optional configurations
-func NewDatabaseSvc(driverName, dsn string, options ...ServiceOpt) (*Service, error) {
+// NewService initializes a new Service with optional configurations
+func NewService(driverName, dsn string, options ...ServiceOpt) (*Service, error) {
 	service := &Service{
 		driverName: driverName,
 		dsn:        dsn,

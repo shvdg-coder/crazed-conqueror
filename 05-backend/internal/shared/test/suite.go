@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"shvdg/crazed-conquerer/internal/schemas"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/environment"
 
@@ -22,7 +23,7 @@ type TestSuite struct {
 	Server   *ServerContainer
 
 	Database *database.Service
-	Schemas  *database.Schemas
+	Schemas  *schemas.Service
 }
 
 // SetupTestSuite prepares a suite to be used throughout multiple tests.
@@ -46,10 +47,12 @@ func SetupTestSuite() *TestSuite {
 
 	dsn := database.CreateDsn(environment.EnvStr(environment.KeyDbUser), environment.EnvStr(environment.KeyDbPassword), environment.EnvStr(environment.KeyDbName), postgres.Host, postgres.Port)
 
-	db, err := database.NewDatabaseSvc(DriverName, dsn, database.WithConnection())
+	db, err := database.NewService(DriverName, dsn, database.WithConnection())
 	if err != nil {
 		log.Fatalf("failed to create database service: %s", err.Error())
 	}
+
+	sch := schemas.NewDefaultService(db)
 
 	return &TestSuite{
 		Context:    ctx,
@@ -58,6 +61,7 @@ func SetupTestSuite() *TestSuite {
 		Postgres:   postgres,
 		Server:     server,
 		Database:   db,
+		Schemas:    sch,
 	}
 }
 
@@ -67,7 +71,7 @@ func (s *TestSuite) Terminate() {
 		s.Server.Terminate()
 	}
 	if s.Postgres != nil {
-		//_ = s.DropSvc.DropAllTables() TODO find a way to replace this
+		_ = s.Schemas.DropAllTables(s.Context)
 		s.Postgres.Terminate()
 	}
 	if s.Network != nil {
