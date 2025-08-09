@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package domain;
 
-option go_package = "backend/internal/user/domain;domain";
+option go_package = "05-backend/internal/user/domain;domain";
 
 import "google/protobuf/timestamp.proto";
 
