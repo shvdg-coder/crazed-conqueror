@@ -38,7 +38,7 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 	}
 
 	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		fields := []string{fieldId, fieldEmail, fieldPassword, fieldDisplayName, fieldLastLoginAt, fieldCreatedAt, fieldUpdatedAt}
+		fields := []string{fieldId, fieldEmail, fieldPassword, fieldDisplayName}
 		query := sql.BuildInsertQuery(tableName, fields)
 
 		argumentSets := make([][]any, len(entities))

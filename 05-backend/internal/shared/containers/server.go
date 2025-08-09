@@ -73,7 +73,7 @@ func createServerContainerRequest(config *ContainerConfig) testcontainers.Generi
 		NetworkAliases: map[string][]string{config.GetNetwork(): {NetworkAliasApi}},
 		ExposedPorts:   []string{environment.EnvStr(environment.KeyApiPort) + "/tcp"},
 		Env:            envMap,
-		WaitingFor: wait.ForLog("http Server started on").
+		WaitingFor: wait.ForLog("http server started on").
 			WithStartupTimeout(1 * time.Minute),
 	}
 

@@ -29,27 +29,12 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	ech.POST("/echo", func(c echo.Context) error {
-		body := make(map[string]interface{})
-		if err := c.Bind(&body); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
-		}
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"method":  c.Request().Method,
-			"path":    c.Request().URL.Path,
-			"headers": c.Request().Header,
-			"body":    body,
-		})
-	})
-
 	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = "8080"
 	}
 
 	address := ":" + port
-	fmt.Printf("http Server started on %s\n", address)
-
 	if err := ech.Start(address); err != nil {
 		ech.Logger.Fatal("failed to start server: ", err)
 	}
