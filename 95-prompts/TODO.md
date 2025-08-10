@@ -7,7 +7,7 @@ Hello Junie,
 
 Based on the `NewDomain` constant defined above, please scaffold a new domain in my project.
 
-Your task is to analyze the existing **`user`** domain as a blueprint and generate a complete set of boilerplate files for the new domain. The generated code must mirror the architectural patterns, file structure, and conceptual components found within `internal/user/`.
+Your task is to analyze the existing domains within `internal/domains/` to identify common practices and architectural patterns. While the **`user`** domain can serve as a primary blueprint, you are encouraged to explore other domains to ensure the generated code is consistent with established conventions and solutions for solved problems. The generated code must mirror the architectural patterns, file structure, and conceptual components found within `internal/domains/user/`.
 
 **Core Instructions:**
 
