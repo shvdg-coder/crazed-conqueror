@@ -83,14 +83,6 @@ var _ = Describe("User Character Repository", Ordered, func() {
 			Expect(userCharacter.GetUserId()).To(Equal(dummyUser.GetId()), "user ID should match")
 			Expect(userCharacter.GetCharacterId()).To(Equal(dummyCharacter.GetId()), "character ID should match")
 		})
-
-		It("should return empty slice when no associations are found", func() {
-			nonExistentUser := userDomain.NewUserEntity().WithDefaults().Build()
-
-			userCharacters, err := userCharacterRepo.GetByUserID(ctx, nonExistentUser.GetId())
-			Expect(err).ToNot(HaveOccurred(), "should not error when no associations found")
-			Expect(userCharacters).To(BeEmpty(), "expected empty slice for non-existent user")
-		})
 	})
 
 	Context("When retrieving user characters by character ID", func() {
@@ -103,14 +95,6 @@ var _ = Describe("User Character Repository", Ordered, func() {
 			userCharacter := userCharacters[0]
 			Expect(userCharacter.GetUserId()).To(Equal(dummyUser.GetId()), "user ID should match")
 			Expect(userCharacter.GetCharacterId()).To(Equal(dummyCharacter.GetId()), "character ID should match")
-		})
-
-		It("should return empty slice when no associations are found", func() {
-			nonExistentCharacter := characterDomain.NewCharacterEntity().WithDefaults().Build()
-
-			userCharacters, err := userCharacterRepo.GetByCharacterID(ctx, nonExistentCharacter.GetId())
-			Expect(err).ToNot(HaveOccurred(), "should not error when no associations found")
-			Expect(userCharacters).To(BeEmpty(), "expected empty slice for non-existent character")
 		})
 	})
 

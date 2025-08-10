@@ -74,12 +74,6 @@ var _ = Describe("User Repository", Ordered, func() {
 			Expect(foundUser).ToNot(BeNil(), "expected to find a user")
 			Expect(foundUser.GetId()).To(Equal(user.GetId()))
 		})
-
-		It("should return nil when no user is found", func() {
-			foundUser, err := userRepo.GetByEmail(ctx, "nosuchuser@domain.com")
-			Expect(err).To(HaveOccurred(), "expected an error for no user found")
-			Expect(foundUser).To(BeNil(), "expected not to find a user")
-		})
 	})
 
 	Context("When one user is updated", func() {

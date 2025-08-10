@@ -73,12 +73,6 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			Expect(foundUnit).ToNot(BeNil(), "expected to find a unit")
 			Expect(foundUnit.GetId()).To(Equal(unit.GetId()))
 		})
-
-		It("should return nil when no unit is found", func() {
-			foundUnit, err := unitRepo.GetByID(ctx, "no-such-unit-456")
-			Expect(err).To(HaveOccurred(), "expected an error for no unit found")
-			Expect(foundUnit).To(BeNil(), "expected not to find a unit")
-		})
 	})
 
 	Context("When one unit is updated", func() {

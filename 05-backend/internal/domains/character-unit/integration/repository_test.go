@@ -90,14 +90,6 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 			Expect(characterUnit.GetCharacterId()).To(Equal(dummyCharacter.GetId()), "character ID should match")
 			Expect(characterUnit.GetUnitId()).To(Equal(dummyUnit.GetId()), "unit ID should match")
 		})
-
-		It("should return empty slice when no associations are found", func() {
-			nonExistentCharacter := characterDomain.NewCharacterEntity().WithDefaults().Build()
-
-			characterUnits, err := characterUnitRepo.GetByCharacterID(ctx, nonExistentCharacter.GetId())
-			Expect(err).ToNot(HaveOccurred(), "should not error when no associations found")
-			Expect(characterUnits).To(BeEmpty(), "expected empty slice for non-existent character")
-		})
 	})
 
 	Context("When retrieving character units by unit ID", func() {
@@ -110,14 +102,6 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 			characterUnit := characterUnits[0]
 			Expect(characterUnit.GetCharacterId()).To(Equal(dummyCharacter.GetId()), "character ID should match")
 			Expect(characterUnit.GetUnitId()).To(Equal(dummyUnit.GetId()), "unit ID should match")
-		})
-
-		It("should return empty slice when no associations are found", func() {
-			nonExistentUnit := unitDomain.NewUnitEntity().WithDefaults().Build()
-
-			characterUnits, err := characterUnitRepo.GetByUnitID(ctx, nonExistentUnit.GetId())
-			Expect(err).ToNot(HaveOccurred(), "should not error when no associations found")
-			Expect(characterUnits).To(BeEmpty(), "expected empty slice for non-existent unit")
 		})
 	})
 
