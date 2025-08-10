@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package domain;
+
+option go_package = "05-backend/internal/domains/user-character/domain;domain";
+
+// Message for UserCharacter link
+message UserCharacterEntity {
+  string user_id = 1;
+  string character_id = 2;
+}

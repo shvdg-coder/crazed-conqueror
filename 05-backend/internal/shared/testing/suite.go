@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"shvdg/crazed-conquerer/internal/schemas"
 	"shvdg/crazed-conquerer/internal/shared/containers"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/environment"
 	"shvdg/crazed-conquerer/internal/shared/paths"
+	"shvdg/crazed-conquerer/internal/shared/schemas"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"

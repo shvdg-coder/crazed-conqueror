@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"context"
-	"shvdg/crazed-conquerer/internal/character/domain"
+	"shvdg/crazed-conquerer/internal/domains/character/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/sql"
 )

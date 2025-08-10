@@ -2,8 +2,8 @@ package integration
 
 import (
 	"context"
-	"shvdg/crazed-conquerer/internal/character/domain"
-	infra "shvdg/crazed-conquerer/internal/character/infrastructure"
+	"shvdg/crazed-conquerer/internal/domains/character/domain"
+	infrastructure2 "shvdg/crazed-conquerer/internal/domains/character/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/testing"
@@ -20,7 +20,7 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 	var ctx context.Context
 
 	var suite *testing.Suite
-	var characterRepo *infra.CharacterRepositoryImpl
+	var characterRepo *infrastructure2.CharacterRepositoryImpl
 
 	BeforeAll(func() {
 		suite = shared.GetSharedSuite()
@@ -28,7 +28,7 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 		Expect(err).ToNot(HaveOccurred(), "failed to start transaction")
 
 		ctx = contexts.SetTransaction(suite.Context, transaction)
-		characterRepo = infra.NewCharacterRepositoryImpl(suite.Database)
+		characterRepo = infrastructure2.NewCharacterRepositoryImpl(suite.Database)
 	})
 
 	AfterAll(func() {
@@ -47,10 +47,10 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 			err := characterRepo.Create(ctx, character)
 			Expect(err).ToNot(HaveOccurred(), "failed to create character")
 
-			fields := []string{infra.FieldId, infra.FieldName}
+			fields := []string{infrastructure2.FieldId, infrastructure2.FieldName}
 			values := []any{character.GetId(), character.GetName()}
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
+			count, err := database.Count(ctx, suite.Database, infrastructure2.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count characters")
 			Expect(count).To(Equal(1), "expected 1 character to be created")
 		})
@@ -121,7 +121,7 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 			err := characterRepo.Delete(ctx, character)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete character")
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, []string{infra.FieldId}, []any{character.GetId()})
+			count, err := database.Count(ctx, suite.Database, infrastructure2.TableName, []string{infrastructure2.FieldId}, []any{character.GetId()})
 			Expect(err).ToNot(HaveOccurred(), "failed to count characters")
 			Expect(count).To(BeZero(), "expected character to be deleted")
 		})

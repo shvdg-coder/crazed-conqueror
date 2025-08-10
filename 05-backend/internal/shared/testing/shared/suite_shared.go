@@ -2,9 +2,9 @@ package shared
 
 import (
 	"log"
-	characterinfra "shvdg/crazed-conquerer/internal/character/infrastructure"
+	characterinfra "shvdg/crazed-conquerer/internal/domains/character/infrastructure"
+	userinfra "shvdg/crazed-conquerer/internal/domains/user/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/testing"
-	userinfra "shvdg/crazed-conquerer/internal/user/infrastructure"
 	"sync"
 )
 

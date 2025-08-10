@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"fmt"
-	"shvdg/crazed-conquerer/internal/character/domain"
+	"shvdg/crazed-conquerer/internal/domains/character/domain"
 	"shvdg/crazed-conquerer/internal/shared/converters"
 	"shvdg/crazed-conquerer/internal/shared/database"
 

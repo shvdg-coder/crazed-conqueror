@@ -2,9 +2,9 @@ package infrastructure
 
 import (
 	"context"
+	"shvdg/crazed-conquerer/internal/domains/user/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/sql"
-	"shvdg/crazed-conquerer/internal/user/domain"
 )
 
 // UserRepositoryImpl provides the concrete implementation of the UserRepository interface

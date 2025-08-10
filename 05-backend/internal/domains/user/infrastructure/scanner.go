@@ -2,9 +2,9 @@ package infrastructure
 
 import (
 	"fmt"
+	"shvdg/crazed-conquerer/internal/domains/user/domain"
 	"shvdg/crazed-conquerer/internal/shared/converters"
 	"shvdg/crazed-conquerer/internal/shared/database"
-	"shvdg/crazed-conquerer/internal/user/domain"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
