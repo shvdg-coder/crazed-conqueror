@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package characterFormation;
+
+option go_package = "shvdg/crazed-conquerer/internal/domains/character-formation/domain;domain";
+
+// Message for CharacterFormationEntity link
+message CharacterFormationEntity {
+  string character_id = 1;
+  string slot = 2;
+}

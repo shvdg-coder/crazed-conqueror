@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package formation;
+
+option go_package = "shvdg/crazed-conquerer/internal/domains/formation/domain;domain";
+
+import "google/protobuf/timestamp.proto";
+
+// Formation represents a character's formation with embedded tiles as JSONB
+message FormationEntity {
+  string slot = 1;
+
+  repeated FormationTileEntity tiles = 2;
+
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}
+
+// FormationTile represents a single tile in the formation grid
+message FormationTileEntity {
+  int32 position_x = 1;
+  int32 position_y = 2;
+  string unit_id = 3;
+}

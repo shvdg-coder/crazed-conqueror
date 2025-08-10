@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package characterEntity;
+package characterUnit;
 
 option go_package = "shvdg/crazed-conquerer/internal/domains/character-unit/domain;domain";
 
