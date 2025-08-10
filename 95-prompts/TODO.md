@@ -11,16 +11,18 @@ Your task is to analyze the existing **`user`** domain as a blueprint and genera
 
 **Core Instructions:**
 
-1.  **Discover the Entity:** Infer the new entity's structure (fields, types, etc.) from its protobuf definition, which you can find at the path: `internal/{NewDomain}/domain/{NewDomain}_entity.proto`.
+1.  **Discover the Entity:** Infer the new entity's structure (fields, types, etc.) from its protobuf definition, which you can find at the path: `internal/domains/{NewDomain}/domain/{NewDomain}_entity.proto`.
 
-2.  **Replicate the Structure:** Create the standard `domain/`, `application/`, and `infrastructure/` directory layout within `internal/{NewDomain}/`.
+2.  **Replicate the Structure:** Create the standard `domain/`, `application/`, and `infrastructure/` directory layout within `internal/domains/{NewDomain}/`.
 
 3.  **Generate Key Files:** For the new domain, please create all the essential files that you see in the `user` domain. This includes, but is not limited to:
     *   **Domain Layer:** A `builder.go` for the entity, a `counters.go` for test data, and a `repository.go` for the interface definition. The repository must only contain a single `GetByXXX` and then the identifier(s) of that entity, as it is unique per domain.
     *   **Application Layer:** A boilerplate `service.go`.
     *   **Infrastructure Layer:** Files for the repository implementation, database schema (`schema.go`, `queries.go`), a row scanner, and a full test suite (`repository_test.go`, `suite_test.go`).
 
-4.  **Adapt the Content:**
+4.  **Update Shared Test Suite:** Modify the `internal/shared/testing/shared/suite_shared.go` file. You must add the necessary import for the new domain's infrastructure package and register its schema within the `GetSharedSuite` function. This will ensure the new domain's database tables are automatically created when the test suite runs.
+
+5.  **Adapt the Content:**
     *   The file contents must be adapted for the new `{NewDomain}` entity, not just a direct copy of the `user` files.
     *   For complex logic like the repository implementation and specific SQL queries, provide clean boilerplate and method stubs. I will implement the business logic later.
     *   For highly reusable components like the builder and test suites, please generate them as completely as possible based on the established pattern.
