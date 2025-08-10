@@ -40,19 +40,6 @@ func (b *BattlefieldBuilder) AddEmptyRows(rows, columns int) *BattlefieldBuilder
 	return b
 }
 
-// WithDimensions creates a battlefield with the specified rows and columns, all empty.
-func (b *BattlefieldBuilder) WithDimensions(rows, columns int) *BattlefieldBuilder {
-	b.tiles = make([][]BattlefieldTile, rows)
-	for i := 0; i < rows; i++ {
-		b.tiles[i] = make([]BattlefieldTile, columns)
-		for j := 0; j < columns; j++ {
-			coordinates := types.NewCoordinates(int32(i), int32(j))
-			b.tiles[i][j] = *NewBattlefieldTile(coordinates, []string{})
-		}
-	}
-	return b
-}
-
 // Build returns the configured Battlefield object.
 func (b *BattlefieldBuilder) Build() *Battlefield {
 	return &Battlefield{
