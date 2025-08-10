@@ -8,7 +8,7 @@ import "google/protobuf/timestamp.proto";
 
 // Formation represents a character's formation with embedded tiles as JSONB
 message FormationEntity {
-  string slot = 1;
+  string id = 1;
 
   repeated FormationTileEntity tiles = 2;
 

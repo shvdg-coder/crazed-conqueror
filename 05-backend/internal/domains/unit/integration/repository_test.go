@@ -68,7 +68,7 @@ var _ = Describe("Unit Repository", Ordered, func() {
 		})
 
 		It("should return the correct unit", func() {
-			foundUnit, err := unitRepo.GetByID(ctx, "find-me-123")
+			foundUnit, err := unitRepo.GetById(ctx, "find-me-123")
 			Expect(err).ToNot(HaveOccurred(), "failed to get unit by ID")
 			Expect(foundUnit).ToNot(BeNil(), "expected to find a unit")
 			Expect(foundUnit.GetId()).To(Equal(unit.GetId()))
@@ -90,7 +90,7 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			err := unitRepo.Update(ctx, unit)
 			Expect(err).ToNot(HaveOccurred(), "failed to update unit")
 
-			updatedUnit, err := unitRepo.GetByID(ctx, unit.GetId())
+			updatedUnit, err := unitRepo.GetById(ctx, unit.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to retrieve updated unit")
 			Expect(updatedUnit.GetName()).To(Equal("A New Name"))
 			Expect(updatedUnit.GetLevel()).To(Equal("50"))
@@ -112,7 +112,7 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			err := unitRepo.Upsert(ctx, unit)
 			Expect(err).ToNot(HaveOccurred(), "failed to upsert new unit")
 
-			retrieved, err := unitRepo.GetByID(ctx, "upsert-unit-789")
+			retrieved, err := unitRepo.GetById(ctx, "upsert-unit-789")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(retrieved).ToNot(BeNil())
 			Expect(retrieved.GetName()).To(Equal("Initial Name"))
@@ -125,7 +125,7 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			err := unitRepo.Upsert(ctx, unit)
 			Expect(err).ToNot(HaveOccurred(), "failed to upsert existing unit")
 
-			retrieved, err := unitRepo.GetByID(ctx, "upsert-unit-789")
+			retrieved, err := unitRepo.GetById(ctx, "upsert-unit-789")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(retrieved).ToNot(BeNil())
 			Expect(retrieved.GetName()).To(Equal("Updated Name"))

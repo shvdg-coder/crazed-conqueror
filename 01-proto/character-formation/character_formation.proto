@@ -7,5 +7,5 @@ option go_package = "shvdg/crazed-conquerer/internal/domains/character-formation
 // Message for CharacterFormationEntity link
 message CharacterFormationEntity {
   string character_id = 1;
-  string slot = 2;
+  string formation_id = 2;
 }

@@ -17,8 +17,8 @@ func NewUnitRepositoryImpl(connection database.Connection) *UnitRepositoryImpl {
 	return &UnitRepositoryImpl{connection}
 }
 
-// GetByID retrieves a unit by their ID
-func (s *UnitRepositoryImpl) GetByID(ctx context.Context, id string) (*domain.UnitEntity, error) {
+// GetById retrieves a unit by their ID
+func (s *UnitRepositoryImpl) GetById(ctx context.Context, id string) (*domain.UnitEntity, error) {
 	fields := []string{FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel, FieldCreatedAt, FieldUpdatedAt}
 	whereClause := sql.CreateDollarClause(1, []string{FieldId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
