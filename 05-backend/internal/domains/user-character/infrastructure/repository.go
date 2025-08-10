@@ -18,6 +18,22 @@ func NewUserCharacterRepositoryImpl(connection database.Connection) *UserCharact
 	return &UserCharacterRepositoryImpl{connection}
 }
 
+// GetByUserID retrieves all character associations for a given user ID
+func (s *UserCharacterRepositoryImpl) GetByUserID(ctx context.Context, userID string) ([]*domain.UserCharacterEntity, error) {
+	fields := []string{FieldUserID, FieldCharacterID}
+	whereClause := sql.CreateDollarClause(1, []string{FieldUserID})
+	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
+	return s.ReadMany(ctx, query, []any{userID}, ScanUserCharacterEntity)
+}
+
+// GetByCharacterID retrieves all user associations for a given character ID
+func (s *UserCharacterRepositoryImpl) GetByCharacterID(ctx context.Context, characterID string) ([]*domain.UserCharacterEntity, error) {
+	fields := []string{FieldUserID, FieldCharacterID}
+	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterID})
+	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
+	return s.ReadMany(ctx, query, []any{characterID}, ScanUserCharacterEntity)
+}
+
 // Create stores user-character associations in the database
 func (s *UserCharacterRepositoryImpl) Create(ctx context.Context, entities ...*domain.UserCharacterEntity) error {
 	if len(entities) == 0 {
@@ -36,13 +52,13 @@ func (s *UserCharacterRepositoryImpl) Create(ctx context.Context, entities ...*d
 }
 
 // Update is not supported for user-character associations
-func (s *UserCharacterRepositoryImpl) Update(ctx context.Context, entities ...*domain.UserCharacterEntity) error {
-	return errors.New("update operation not supported for user-character associations")
+func (s *UserCharacterRepositoryImpl) Update(ctx context.Context, entities ...*domain.UserCharacterEntity) ([]*domain.UserCharacterEntity, error) {
+	return nil, errors.New("update operation not supported for user-character associations")
 }
 
 // Upsert is not supported for user-character associations
-func (s *UserCharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserCharacterEntity) error {
-	return errors.New("upsert operation not supported for user-character associations")
+func (s *UserCharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserCharacterEntity) ([]*domain.UserCharacterEntity, error) {
+	return nil, errors.New("upsert operation not supported for user-character associations")
 }
 
 // Delete removes user-character associations from the database
@@ -61,22 +77,6 @@ func (s *UserCharacterRepositoryImpl) Delete(ctx context.Context, entities ...*d
 	}
 
 	return database.Batch(ctx, s.Connection, query, argumentSets)
-}
-
-// GetByUserID retrieves all character associations for a given user ID
-func (s *UserCharacterRepositoryImpl) GetByUserID(ctx context.Context, userID string) ([]*domain.UserCharacterEntity, error) {
-	fields := []string{FieldUserID, FieldCharacterID}
-	whereClause := sql.CreateDollarClause(1, []string{FieldUserID})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadMany(ctx, query, []any{userID}, ScanUserCharacterEntity)
-}
-
-// GetByCharacterID retrieves all user associations for a given character ID
-func (s *UserCharacterRepositoryImpl) GetByCharacterID(ctx context.Context, characterID string) ([]*domain.UserCharacterEntity, error) {
-	fields := []string{FieldUserID, FieldCharacterID}
-	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterID})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadMany(ctx, query, []any{characterID}, ScanUserCharacterEntity)
 }
 
 // ReadOne executes a query and returns a single user character entity

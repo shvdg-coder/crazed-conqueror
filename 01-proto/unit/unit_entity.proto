@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package domain;
+
+option go_package = "05-backend/internal/domains/unit/domain;domain";
+
+import "google/protobuf/timestamp.proto";
+
+// Message for Unit
+message UnitEntity {
+  string id = 1;
+
+  string vocation = 3;
+  string faction = 4;
+
+  string name = 5;
+  string level = 6;
+
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}

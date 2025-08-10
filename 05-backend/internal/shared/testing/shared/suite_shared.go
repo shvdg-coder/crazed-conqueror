@@ -2,7 +2,9 @@ package shared
 
 import (
 	"log"
+	characterunitinfra "shvdg/crazed-conquerer/internal/domains/character-unit/infrastructure"
 	characterinfra "shvdg/crazed-conquerer/internal/domains/character/infrastructure"
+	unitinfra "shvdg/crazed-conquerer/internal/domains/unit/infrastructure"
 	usercharacterinfra "shvdg/crazed-conquerer/internal/domains/user-character/infrastructure"
 	userinfra "shvdg/crazed-conquerer/internal/domains/user/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/testing"
@@ -21,7 +23,9 @@ func GetSharedSuite() *testing.Suite {
 		suite = testing.NewTestSuite()
 		suite.AddSchema(userinfra.NewUserSchema(suite.Database))
 		suite.AddSchema(characterinfra.NewCharacterSchema(suite.Database))
+		suite.AddSchema(unitinfra.NewUnitSchema(suite.Database))
 		suite.AddSchema(usercharacterinfra.NewUserCharacterSchema(suite.Database))
+		suite.AddSchema(characterunitinfra.NewCharacterUnitSchema(suite.Database))
 
 		err := suite.CreateAllTables(suite.Context)
 		if err != nil {
