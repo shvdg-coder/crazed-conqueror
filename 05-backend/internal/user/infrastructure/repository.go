@@ -18,15 +18,19 @@ func NewUserRepositoryImpl(connection database.Connection) *UserRepositoryImpl {
 }
 
 // GetByEmail retrieves a user by their email address
-func (s *UserRepositoryImpl) GetByEmail(email string) (*domain.UserEntity, error) {
-	// TODO: Implementation
-	return nil, nil
+func (s *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.UserEntity, error) {
+	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt}
+	whereClause := sql.CreateDollarClause(1, []string{FieldEmail})
+	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
+	return s.ReadOne(ctx, query, []any{email}, ScanUserEntity)
 }
 
 // Authenticate validates user credentials and returns the user if valid
-func (s *UserRepositoryImpl) Authenticate(email, password string) (*domain.UserEntity, error) {
-	// TODO: Implementation
-	return nil, nil
+func (s *UserRepositoryImpl) Authenticate(ctx context.Context, email, password string) (*domain.UserEntity, error) {
+	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt}
+	whereClauses := sql.CreateDollarClause(1, []string{FieldEmail, FieldPassword})
+	query := sql.BuildSelectQuery(TableName, fields, whereClauses...)
+	return s.ReadOne(ctx, query, []any{email, password}, ScanUserEntity)
 }
 
 // Create inserts one or more user entities into the database
@@ -48,27 +52,65 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 
 // Update modifies one or more user entities in the database
 func (s *UserRepositoryImpl) Update(ctx context.Context, entities ...*domain.UserEntity) error {
-	// TODO: Implementation
-	return nil
+	if len(entities) == 0 {
+		return nil
+	}
+
+	fields := []string{FieldEmail, FieldPassword, FieldDisplayName}
+	setClauses := sql.CreateDollarClause(1, fields)
+	whereClauses := sql.CreateDollarClause(4, []string{FieldId})
+	query := sql.BuildUpdateQuery(TableName, setClauses, whereClauses)
+
+	argumentSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		argumentSets[i] = []any{entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName(), entity.GetId()}
+	}
+
+	return database.Batch(ctx, s.Connection, query, argumentSets)
 }
 
 // Upsert inserts or updates one or more user entities in the database
 func (s *UserRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserEntity) error {
-	return nil
+	if len(entities) == 0 {
+		return nil
+	}
+
+	insertFields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
+	keyFields := []string{FieldId}
+	updateFields := []string{FieldEmail, FieldPassword, FieldDisplayName}
+	query := sql.BuildUpsertQuery(TableName, insertFields, keyFields, updateFields)
+
+	argumentSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
+	}
+
+	return database.Batch(ctx, s.Connection, query, argumentSets)
 }
 
 // Delete removes one or more user entities from the database
 func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.UserEntity) error {
-	// TODO: Implementation
-	return nil
+	if len(entities) == 0 {
+		return nil
+	}
+
+	inClause := sql.CreateTupleInClause([]string{FieldId}, len(entities), 1)
+	query := sql.BuildDeleteQuery(TableName, []string{inClause})
+
+	values := make([]any, len(entities))
+	for i, entity := range entities {
+		values[i] = entity.GetId()
+	}
+
+	return database.Execute(ctx, s.Connection, query, values...)
 }
 
 // ReadOne executes a query and returns a single user entity
 func (s *UserRepositoryImpl) ReadOne(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	return nil, nil
+	return database.QueryOne(ctx, s.Connection, query, values, scan)
 }
 
 // ReadMany executes a query and returns multiple user entities
-func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	return nil, nil
+func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) ([]*domain.UserEntity, error) {
+	return database.QueryMany(ctx, s.Connection, query, values, scan)
 }
