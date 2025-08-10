@@ -75,8 +75,15 @@ func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values 
 }
 
 // Count returns the number of user entities matching the given criteria
-func (s *UserRepositoryImpl) Count(ctx context.Context, query string, values ...any) (int, error) {
+func (s *UserRepositoryImpl) Count(ctx context.Context, fields []string, values []any) (int, error) {
+	if len(fields) == 0 || len(values) == 0 {
+		return 0, nil
+	}
+
 	return database.WithExecutorResult(ctx, s.connection, func(executor database.Executor) (int, error) {
+		whereClauses := sql.CreateDollarClause(1, fields)
+		query := sql.BuildCountQuery(TableName, whereClauses)
+
 		var count int
 		err := executor.QueryRow(ctx, query, values...).Scan(&count)
 		if err != nil {

@@ -3,7 +3,6 @@ package integration
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
-	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 	"shvdg/crazed-conquerer/internal/user/domain"
@@ -52,10 +51,9 @@ var _ = Describe("User Repository", Ordered, func() {
 			Expect(err).ToNot(HaveOccurred(), "failed to create user")
 
 			fields := []string{infra.FieldId, infra.FieldEmail, infra.FieldDisplayName}
-			whereClauses := sql.CreateDollarClause(1, fields)
 			values := []any{user.GetId(), user.GetEmail(), user.GetDisplayName()}
 
-			count, err := userRepo.Count(ctx, sql.BuildCountQuery(infra.TableName, whereClauses), values...)
+			count, err := userRepo.Count(ctx, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count users")
 			Expect(count).To(Equal(1), "expected 1 user to be created")
 		})
