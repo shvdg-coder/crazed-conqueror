@@ -1,4 +1,4 @@
-package integration
+package shared
 
 import (
 	"log"

@@ -26,3 +26,14 @@ func WithExecutor(ctx context.Context, connection Connection, function func(Exec
 	defer cleanup()
 	return function(executor)
 }
+
+// WithExecutorResult executes a function with a transaction or connection as the executor and returns a result.
+func WithExecutorResult[T any](ctx context.Context, connection Connection, function func(Executor) (T, error)) (T, error) {
+	var zero T
+	executor, cleanup, err := connection.GetExecutor(ctx)
+	if err != nil {
+		return zero, fmt.Errorf("failed to get executor: %w", err)
+	}
+	defer cleanup()
+	return function(executor)
+}

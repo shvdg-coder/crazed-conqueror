@@ -38,8 +38,8 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 	}
 
 	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		fields := []string{fieldId, fieldEmail, fieldPassword, fieldDisplayName}
-		query := sql.BuildInsertQuery(tableName, fields)
+		fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
+		query := sql.BuildInsertQuery(TableName, fields)
 
 		argumentSets := make([][]any, len(entities))
 		for i, entity := range entities {
@@ -75,7 +75,13 @@ func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values 
 }
 
 // Count returns the number of user entities matching the given criteria
-func (s *UserRepositoryImpl) Count(ctx context.Context, query string, values []any) (int, error) {
-	// TODO: Implementation
-	return 0, nil
+func (s *UserRepositoryImpl) Count(ctx context.Context, query string, values ...any) (int, error) {
+	return database.WithExecutorResult(ctx, s.connection, func(executor database.Executor) (int, error) {
+		var count int
+		err := executor.QueryRow(ctx, query, values...).Scan(&count)
+		if err != nil {
+			return 0, err
+		}
+		return count, nil
+	})
 }

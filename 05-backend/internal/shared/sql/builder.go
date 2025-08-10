@@ -26,7 +26,7 @@ func CreateDollarClause(startIndex int, fields []string) []string {
 }
 
 // CreateNamedClause returns an array of field equality clauses using table-qualified field names
-func CreateNamedClause(fields []string, targetTable string, sourceTable string) []string {
+func CreateNamedClause(fields []string, targetTable, sourceTable string) []string {
 	clauses := make([]string, len(fields))
 	for i, field := range fields {
 		if targetTable != "" {
@@ -39,7 +39,7 @@ func CreateNamedClause(fields []string, targetTable string, sourceTable string) 
 }
 
 // CreateTupleInClause builds a composite IN clause
-func CreateTupleInClause(columnNames []string, tupleCount int, startIndex int) string {
+func CreateTupleInClause(columnNames []string, tupleCount, startIndex int) string {
 	var tuples []string
 	argIndex := startIndex
 	for i := 0; i < tupleCount; i++ {
@@ -65,8 +65,8 @@ func BuildTempTableQuery(tempTableName, targetTableName string, columns []string
 }
 
 // BuildDropTableQuery returns a query string to drop a table if it exists
-func BuildDropTableQuery(tableName string) string {
-	return "DROP TABLE IF EXISTS " + tableName + " CASCADE"
+func BuildDropTableQuery(table string) string {
+	return "DROP TABLE IF EXISTS " + table + " CASCADE"
 }
 
 // BuildCountQuery returns a COUNT query string with the specified WHERE clauses
@@ -80,7 +80,7 @@ func BuildInsertQuery(table string, fields []string) string {
 }
 
 // BuildInsertReturningQuery returns an INSERT query string with a RETURNING clause
-func BuildInsertReturningQuery(table string, insertFields []string, returnFields []string) string {
+func BuildInsertReturningQuery(table string, insertFields, returnFields []string) string {
 	insertQuery := BuildInsertQuery(table, insertFields)
 	return insertQuery + " RETURNING " + strings.Join(returnFields, ", ")
 }
@@ -95,12 +95,12 @@ func BuildSelectQuery(table string, fields []string, whereClauses ...string) str
 }
 
 // BuildUpdateQuery returns an UPDATE query string with SET and WHERE clauses
-func BuildUpdateQuery(table string, setClauses []string, whereClauses []string) string {
+func BuildUpdateQuery(table string, setClauses, whereClauses []string) string {
 	return "UPDATE " + table + " SET " + strings.Join(setClauses, ", ") + " WHERE " + strings.Join(whereClauses, " AND ")
 }
 
 // BuildUpdateReturningQuery returns an UPDATE query string with a RETURNING clause
-func BuildUpdateReturningQuery(table string, setClauses []string, whereClauses []string, returnFields []string) string {
+func BuildUpdateReturningQuery(table string, setClauses, whereClauses []string, returnFields []string) string {
 	updateQuery := BuildUpdateQuery(table, setClauses, whereClauses)
 	return updateQuery + " RETURNING " + strings.Join(returnFields, ", ")
 }
@@ -111,28 +111,28 @@ func BuildDeleteQuery(table string, whereClauses []string) string {
 }
 
 // BuildDeleteReturningQuery returns a DELETE query string with RETURNING clause
-func BuildDeleteReturningQuery(table string, whereClauses []string, returnFields []string) string {
+func BuildDeleteReturningQuery(table string, whereClauses, returnFields []string) string {
 	deleteQuery := BuildDeleteQuery(table, whereClauses)
 	return deleteQuery + " RETURNING " + strings.Join(returnFields, ", ")
 }
 
 // BuildSelectFromQuery returns a SELECT query string with an EXISTS subquery
-func BuildSelectFromQuery(table, sourceTable string, fields []string, whereClauses []string) string {
-	return "SELECT " + strings.Join(fields, ", ") + " FROM " + table + " WHERE EXISTS (SELECT 1 FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ") + ")"
+func BuildSelectFromQuery(targetTable, sourceTable string, fields, whereClauses []string) string {
+	return "SELECT " + strings.Join(fields, ", ") + " FROM " + targetTable + " WHERE EXISTS (SELECT 1 FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ") + ")"
 }
 
 // BuildUpdateFromQuery returns an UPDATE query string with a FROM clause
-func BuildUpdateFromQuery(table, sourceTable string, setClauses []string, whereClauses []string) string {
-	return "UPDATE " + table + " SET " + strings.Join(setClauses, ", ") + " FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ")
+func BuildUpdateFromQuery(targetTable, sourceTable string, setClauses, whereClauses []string) string {
+	return "UPDATE " + targetTable + " SET " + strings.Join(setClauses, ", ") + " FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ")
 }
 
 // BuildDeleteFromQuery returns a DELETE query string with an EXISTS subquery
-func BuildDeleteFromQuery(table, sourceTable string, whereClauses []string) string {
-	return "DELETE FROM " + table + " WHERE EXISTS (SELECT 1 FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ") + ")"
+func BuildDeleteFromQuery(targetTable, sourceTable string, whereClauses []string) string {
+	return "DELETE FROM " + targetTable + " WHERE EXISTS (SELECT 1 FROM " + sourceTable + " WHERE " + strings.Join(whereClauses, " AND ") + ")"
 }
 
 // BuildUpsertQuery returns an INSERT query string with ON CONFLICT DO UPDATE clause
-func BuildUpsertQuery(table string, insertFields []string, keyFields []string, updateFields []string) string {
+func BuildUpsertQuery(table string, insertFields []string, keyFields, updateFields []string) string {
 	insertQuery := BuildInsertQuery(table, insertFields)
 	if len(updateFields) == 0 {
 		return insertQuery + " ON CONFLICT (" + strings.Join(keyFields, ", ") + ") DO NOTHING"
@@ -147,7 +147,7 @@ func BuildUpsertQuery(table string, insertFields []string, keyFields []string, u
 }
 
 // BuildUpsertReturningQuery returns an INSERT query string with ON CONFLICT DO UPDATE and RETURNING clauses
-func BuildUpsertReturningQuery(table string, insertFields []string, keyFields []string, updateFields []string, returnFields []string) string {
+func BuildUpsertReturningQuery(table string, insertFields, keyFields, updateFields, returnFields []string) string {
 	upsertQuery := BuildUpsertQuery(table, insertFields, keyFields, updateFields)
 	return upsertQuery + " RETURNING " + strings.Join(returnFields, ", ")
 }

@@ -53,6 +53,13 @@ var _ = Describe("SQL Utils", Ordered, func() {
 			Expect(query).To(Equal("DELETE FROM users WHERE id = $1"))
 		})
 
+		It("should build a valid DELETE RETURNING query", func() {
+			whereClauses := CreateDollarClause(1, []string{"id"})
+			returnFields := []string{"id", "name", "email"}
+			query := BuildDeleteReturningQuery(table, whereClauses, returnFields)
+			Expect(query).To(Equal("DELETE FROM users WHERE id = $1 RETURNING id, name, email"))
+		})
+
 		It("should build a valid SELECT FROM query", func() {
 			sourceTable := "temp"
 			whereClauses := CreateNamedClause([]string{"id"}, table, sourceTable)

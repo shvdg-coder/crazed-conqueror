@@ -20,13 +20,13 @@ func NewUserSchema(connection database.Connection) *UserSchema {
 // CreateTable creates the users-table in the database
 func (s *UserSchema) CreateTable(ctx context.Context) error {
 	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		return database.Execute(ctx, executor, createTableQuery)
+		return database.Execute(ctx, executor, CreateTableQuery)
 	})
 }
 
 // DropTable removes the users-table from the database
 func (s *UserSchema) DropTable(ctx context.Context) error {
 	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		return database.Execute(ctx, executor, dropTableQuery)
+		return database.Execute(ctx, executor, DropTableQuery)
 	})
 }

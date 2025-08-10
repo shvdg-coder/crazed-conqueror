@@ -1,7 +1,7 @@
 package integration
 
 import (
-	"shvdg/crazed-conquerer/internal/shared/testing/integration"
+	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -15,7 +15,7 @@ func TestInfrastructure(t *testing.T) {
 
 // Executes the first block before and the second block after all the tests are run.
 var _ = SynchronizedBeforeSuite(func() []byte {
-	integration.GetSharedSuite()
+	shared.GetSharedSuite()
 	return nil
 }, func(data []byte) {
 	// N.A
@@ -25,5 +25,5 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 var _ = SynchronizedAfterSuite(func() {
 	// N.A
 }, func() {
-	integration.CleanupSharedSuite()
+	shared.CleanupSharedSuite()
 })

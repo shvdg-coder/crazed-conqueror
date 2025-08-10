@@ -3,10 +3,11 @@ package integration
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
-	"shvdg/crazed-conquerer/internal/shared/testing/integration"
+	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 	"shvdg/crazed-conquerer/internal/user/domain"
-	"shvdg/crazed-conquerer/internal/user/infrastructure"
+	infra "shvdg/crazed-conquerer/internal/user/infrastructure"
 
 	"github.com/jackc/pgx/v5"
 	. "github.com/onsi/ginkgo/v2"
@@ -19,15 +20,15 @@ var _ = Describe("User Repository", Ordered, func() {
 	var ctx context.Context
 
 	var suite *testing.Suite
-	var userRepo *infrastructure.UserRepositoryImpl
+	var userRepo *infra.UserRepositoryImpl
 
 	BeforeAll(func() {
-		suite = integration.GetSharedSuite()
+		suite = shared.GetSharedSuite()
 		transaction, err = suite.StartTransaction()
 		Expect(err).ToNot(HaveOccurred(), "failed to start transaction")
 
 		ctx = contexts.SetTransaction(suite.Context, transaction)
-		userRepo = infrastructure.NewUserRepositoryImpl(suite.Database)
+		userRepo = infra.NewUserRepositoryImpl(suite.Database)
 	})
 
 	AfterAll(func() {
@@ -49,10 +50,18 @@ var _ = Describe("User Repository", Ordered, func() {
 		It("should successfully store the user in the database", func() {
 			err := userRepo.Create(ctx, user)
 			Expect(err).ToNot(HaveOccurred(), "failed to create user")
+
+			fields := []string{infra.FieldId, infra.FieldEmail, infra.FieldDisplayName}
+			whereClauses := sql.CreateDollarClause(1, fields)
+			values := []any{user.GetId(), user.GetEmail(), user.GetDisplayName()}
+
+			count, err := userRepo.Count(ctx, sql.BuildCountQuery(infra.TableName, whereClauses), values...)
+			Expect(err).ToNot(HaveOccurred(), "failed to count users")
+			Expect(count).To(Equal(1), "expected 1 user to be created")
 		})
 
 		AfterAll(func() {
-			_, err := transaction.Exec(ctx, "DELETE FROM users")
+			_, err := transaction.Exec(ctx, infra.DropTableQuery)
 			Expect(err).ToNot(HaveOccurred(), "failed to cleanup users")
 		})
 	})
