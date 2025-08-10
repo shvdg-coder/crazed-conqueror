@@ -52,13 +52,13 @@ func (s *UserCharacterRepositoryImpl) Create(ctx context.Context, entities ...*d
 }
 
 // Update is not supported for user-character associations
-func (s *UserCharacterRepositoryImpl) Update(ctx context.Context, entities ...*domain.UserCharacterEntity) ([]*domain.UserCharacterEntity, error) {
-	return nil, errors.New("update operation not supported for user-character associations")
+func (s *UserCharacterRepositoryImpl) Update(ctx context.Context, entities ...*domain.UserCharacterEntity) error {
+	return errors.New("update operation not supported for user-character associations")
 }
 
 // Upsert is not supported for user-character associations
-func (s *UserCharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserCharacterEntity) ([]*domain.UserCharacterEntity, error) {
-	return nil, errors.New("upsert operation not supported for user-character associations")
+func (s *UserCharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserCharacterEntity) error {
+	return errors.New("upsert operation not supported for user-character associations")
 }
 
 // Delete removes user-character associations from the database

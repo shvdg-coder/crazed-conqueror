@@ -10,5 +10,5 @@ type Repository[T any] interface {
 	Delete(ctx context.Context, entities ...T) error
 
 	ReadOne(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
-	ReadMany(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
+	ReadMany(ctx context.Context, query string, values []any, scan ScannerFunc[T]) ([]T, error)
 }

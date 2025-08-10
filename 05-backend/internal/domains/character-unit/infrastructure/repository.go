@@ -52,13 +52,13 @@ func (s *CharacterUnitRepositoryImpl) Create(ctx context.Context, entities ...*d
 }
 
 // Update is not supported for character-unit associations
-func (s *CharacterUnitRepositoryImpl) Update(ctx context.Context, entities ...*domain.CharacterUnitEntity) ([]*domain.CharacterUnitEntityBuilder, error) {
-	return nil, errors.New("update operation not supported for character-unit associations")
+func (s *CharacterUnitRepositoryImpl) Update(ctx context.Context, entities ...*domain.CharacterUnitEntity) error {
+	return errors.New("update operation not supported for character-unit associations")
 }
 
 // Upsert is not supported for character-unit associations
-func (s *CharacterUnitRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.CharacterUnitEntity) ([]*domain.CharacterUnitEntityBuilder, error) {
-	return nil, errors.New("upsert operation not supported for character-unit associations")
+func (s *CharacterUnitRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.CharacterUnitEntity) error {
+	return errors.New("upsert operation not supported for character-unit associations")
 }
 
 // Delete removes one or more character unit entities from the database
