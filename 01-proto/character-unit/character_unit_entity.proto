@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package domain;
+package characterEntity;
 
 option go_package = "05-backend/internal/domains/character-unit/domain;domain";
 

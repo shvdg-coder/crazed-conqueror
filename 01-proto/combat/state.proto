@@ -1,0 +1,24 @@
+syntax = "proto3";
+import "01-proto/shared/enum_directions.proto";
+import "01-proto/combat/enum_stances.proto";
+import "01-proto/shared/coordinates.proto";
+
+package combat;
+
+option go_package = "05-backend/internal/domains/combat/domain;domain";
+
+message State {
+  int32 health = 1;
+  int32 attack_power = 2;
+
+  shared.Coordinates coordinates = 12;
+  shared.Direction facing = 11;
+  Stance stance = 10;
+
+  int32 ticks_between_dispelling = 6;
+  int32 ticks_between_afflicting = 5;
+  int32 ticks_between_attacking = 4;
+  int32 ticks_between_moving = 3;
+  int32 ticks_between_healing = 7;
+  int32 ticks_between_summoning = 8;
+}

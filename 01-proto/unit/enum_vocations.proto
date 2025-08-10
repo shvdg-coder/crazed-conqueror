@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package unit;
+
+option go_package = "05-backend/internal/domains/unit/domain;domain";
+
+// Different types of vocations
+enum Vocation {
+  VOCATION_NONE = 0;
+  VOCATION_LUMBERJACK = 3;
+  VOCATION_MINER = 4;
+  VOCATION_SUMMONER = 5;
+  VOCATION_SWORDSMAN = 1;
+  VOCATION_AXEMAN = 2;
+}

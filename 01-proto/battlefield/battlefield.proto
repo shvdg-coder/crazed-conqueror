@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package domain;
+package battlefield;
 
 option go_package = "05-backend/internal/domains/battlefield/domain;domain";
 
@@ -16,5 +16,4 @@ message BattlefieldRow {
 
 // Message for a single tile on the battlefield
 message BattlefieldTile {
-
 }

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package shared;
+
+option go_package = "05-backend/internal/shared/domain;domain";
+
+// Faction types
+enum Faction {
+  FACTION_NONE = 0;
+  FACTION_HUMAN = 1;
+  FACTION_ORC = 2;
+}

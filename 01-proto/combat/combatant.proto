@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "01-proto/shared/enum_teams.proto";
+import "01-proto/combat/definitions.proto";
+import "01-proto/combat/modifications.proto";
+import "01-proto/combat/state.proto";
+
+package combat;
+
+option go_package = "05-backend/internal/domains/combat/domain;domain";
+
+message Combatant {
+  string unit_id = 1;
+
+  shared.Team team = 7;
+  Definitions definitions = 12;
+
+  State state = 14;
+  Modifications modifications = 13;
+}

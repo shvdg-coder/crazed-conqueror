@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package shared;
+
+option go_package = "05-backend/internal/shared/domain;domain";
+
+// A list of directions
+enum Direction {
+  DIRECTION_NONE = 0;
+  DIRECTION_NORTH = 1;
+  DIRECTION_EAST = 3;
+  DIRECTION_SOUTH = 4;
+  DIRECTION_WEST = 5;
+}

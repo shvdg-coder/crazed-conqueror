@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package combat;
+
+option go_package = "05-backend/internal/domains/combat/domain;domain";
+
+// Stance types
+enum Stance {
+  STANCE_NONE = 0;
+  STANCE_IDLE = 1;
+  STANCE_ATTACK = 2;
+  STANCE_DEFEND = 3;
+}

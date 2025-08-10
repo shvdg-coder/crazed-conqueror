@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package shared;
+
+option go_package = "05-backend/internal/shared/domain;domain";
+
+// Message for Coordinate
+message Coordinates {
+  int32 x = 1;
+  int32 y = 2;
+}

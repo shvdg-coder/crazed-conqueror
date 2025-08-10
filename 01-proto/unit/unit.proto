@@ -1,0 +1,23 @@
+syntax = "proto3";
+import "01-proto/unit/enum_vocations.proto";
+import "01-proto/shared/enum_factions.proto";
+
+package unit;
+
+option go_package = "05-backend/internal/domains/unit/domain;domain";
+
+// UnitList represents a collection of units.
+message UnitList{
+  repeated Unit units = 1;
+}
+
+// Unit represents a combat unit
+message Unit {
+  string id = 1;
+  string name = 4;
+  string level = 5;
+  Vocation vocation = 2;
+  shared.Faction faction = 3;
+}
+
+
