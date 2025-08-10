@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package shared;
 
-option go_package = "05-backend/internal/shared/types;types";
+option go_package = "shvdg/crazed-conquerer/05-backend/internal/shared/types;types";
 
 // Message for Coordinate
 message Coordinates {

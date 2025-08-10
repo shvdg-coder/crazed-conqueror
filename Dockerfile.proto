@@ -17,7 +17,8 @@ RUN find 01-proto -name "*.proto" | xargs protoc \
     --proto_path=. \
     --proto_path="$GOPATH/pkg/mod" \
     --proto_path="$PROTOC_INCLUDE" \
-    --go_out=/proto-go-out
+    --go_out=/proto-go-out \
+    --go_opt=module=shvdg/crazed-conquerer
 
 # --------- Stage 2: Build proto Dart files ---------
 FROM dart:3.8-sdk as proto-dart

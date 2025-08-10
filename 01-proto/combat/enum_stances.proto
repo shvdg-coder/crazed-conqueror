@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package combat;
 
-option go_package = "05-backend/internal/domains/combat/domain;domain";
+option go_package = "shvdg/crazed-conquerer/05-backend/internal/domains/combat/domain;domain";
 
 // Stance types
 enum Stance {

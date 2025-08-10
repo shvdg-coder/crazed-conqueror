@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package characterEntity;
 
-option go_package = "05-backend/internal/domains/character-unit/domain;domain";
+option go_package = "shvdg/crazed-conquerer/05-backend/internal/domains/character-unit/domain;domain";
 
 // Message for CharacterUnit link
 message CharacterUnitEntity {
