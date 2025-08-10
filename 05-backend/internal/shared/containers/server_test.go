@@ -32,7 +32,7 @@ var _ = Describe("Server Container Tests", Ordered, func() {
 		}
 	})
 
-	It("should start Server container successfully", func() {
+	It("should start server container successfully", func() {
 		var err error
 		server, err = NewServerContainer(ctx, config)
 		Expect(err).NotTo(HaveOccurred(), "failed to create server container")

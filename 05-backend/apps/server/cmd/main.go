@@ -35,6 +35,8 @@ func main() {
 	}
 
 	address := ":" + port
+	fmt.Printf("http server started on %s\n", address)
+
 	if err := ech.Start(address); err != nil {
 		ech.Logger.Fatal("failed to start server: ", err)
 	}
