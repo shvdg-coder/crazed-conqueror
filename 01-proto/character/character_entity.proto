@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package domain;
+
+option go_package = "05-backend/internal/character/domain;domain";
+
+import "google/protobuf/timestamp.proto";
+
+// Message for Character
+message CharacterEntity {
+  string id = 1;
+  string name = 2;
+
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+}

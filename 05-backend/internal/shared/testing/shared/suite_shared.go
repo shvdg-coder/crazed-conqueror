@@ -2,8 +2,9 @@ package shared
 
 import (
 	"log"
+	characterinfra "shvdg/crazed-conquerer/internal/character/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/testing"
-	"shvdg/crazed-conquerer/internal/user/infrastructure"
+	userinfra "shvdg/crazed-conquerer/internal/user/infrastructure"
 	"sync"
 )
 
@@ -13,11 +14,12 @@ var (
 	mutex     sync.RWMutex
 )
 
-// GetSharedSuite returns the shared test suite instance with infrastructure schemas, creating it if necessary
+// GetSharedSuite returns the shared test suite instance with userinfra schemas, creating it if necessary
 func GetSharedSuite() *testing.Suite {
 	setupOnce.Do(func() {
 		suite = testing.NewTestSuite()
-		suite.AddSchema(infrastructure.NewUserSchema(suite.Database))
+		suite.AddSchema(userinfra.NewUserSchema(suite.Database))
+		suite.AddSchema(characterinfra.NewCharacterSchema(suite.Database))
 
 		err := suite.CreateAllTables(suite.Context)
 		if err != nil {
