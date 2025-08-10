@@ -54,6 +54,11 @@ func (s *UserRepositoryImpl) Update(ctx context.Context, entities ...*domain.Use
 	return nil
 }
 
+// Upsert inserts or updates one or more user entities in the database
+func (s *UserRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.UserEntity) error {
+	return nil
+}
+
 // Delete removes one or more user entities from the database
 func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.UserEntity) error {
 	// TODO: Implementation
@@ -62,12 +67,10 @@ func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Use
 
 // ReadOne executes a query and returns a single user entity
 func (s *UserRepositoryImpl) ReadOne(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	// TODO: Implementation
 	return nil, nil
 }
 
 // ReadMany executes a query and returns multiple user entities
 func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
-	// TODO: Implementation
 	return nil, nil
 }
