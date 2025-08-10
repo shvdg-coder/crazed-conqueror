@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package shared;
 
-option go_package = "05-backend/internal/shared/domain;domain";
+option go_package = "05-backend/internal/shared/types;types";
 
 // A list of directions
 enum Direction {
