@@ -35,17 +35,15 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	return database.WithExecutor(ctx, s.Connection, func(executor database.Executor) error {
-		fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
-		query := sql.BuildInsertQuery(TableName, fields)
+	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
+	query := sql.BuildInsertQuery(TableName, fields)
 
-		argumentSets := make([][]any, len(entities))
-		for i, entity := range entities {
-			argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
-		}
+	argumentSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
+	}
 
-		return database.Batch(ctx, executor, query, argumentSets)
-	})
+	return database.Batch(ctx, s.Connection, query, argumentSets)
 }
 
 // Update modifies one or more user entities in the database

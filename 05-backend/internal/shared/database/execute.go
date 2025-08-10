@@ -9,94 +9,101 @@ import (
 )
 
 // Execute executes a script with optional arguments and returns no value
-func Execute(ctx context.Context, executor Executor, script string, arguments ...any) error {
+func Execute(ctx context.Context, connection Connection, script string, arguments ...any) error {
 	if ctx == nil || script == "" {
 		return fmt.Errorf("invalid arguments to execute script")
 	}
 
-	_, err := executor.Exec(ctx, script, arguments...)
-	if err != nil {
-		return fmt.Errorf("failed to execute command: %w", err)
-	}
-
-	return nil
+	return WithExecutor(ctx, connection, func(executor Executor) error {
+		_, err := executor.Exec(ctx, script, arguments...)
+		if err != nil {
+			return fmt.Errorf("failed to execute command: %w", err)
+		}
+		return nil
+	})
 }
 
 // Count executes a script with optional arguments and returns the number of rows affected
-func Count(ctx context.Context, executor Executor, table string, fields []string, values []any) (int, error) {
-	var count int
-
+func Count(ctx context.Context, connection Connection, table string, fields []string, values []any) (int, error) {
 	if ctx == nil || len(fields) == 0 || len(values) == 0 {
-		return count, fmt.Errorf("invalid arguments to count rows")
+		return 0, fmt.Errorf("invalid arguments to count rows")
 	}
 
-	whereClauses := sql.CreateDollarClause(1, fields)
-	query := sql.BuildCountQuery(table, whereClauses)
+	return WithExecutorResult(ctx, connection, func(executor Executor) (int, error) {
+		var count int
+		whereClauses := sql.CreateDollarClause(1, fields)
+		query := sql.BuildCountQuery(table, whereClauses)
 
-	err := executor.QueryRow(ctx, query, values...).Scan(&count)
-	if err != nil {
-		return count, fmt.Errorf("failed to count rows: %w", err)
-	}
+		err := executor.QueryRow(ctx, query, values...).Scan(&count)
+		if err != nil {
+			return count, fmt.Errorf("failed to count rows: %w", err)
+		}
 
-	return count, nil
+		return count, nil
+	})
 }
 
 // QueryOne executes a script with arguments and returns a single scanned value
-func QueryOne[T any](ctx context.Context, executor Executor, script string, arguments []any, scan ScannerFunc[T]) (T, error) {
+func QueryOne[T any](ctx context.Context, connection Connection, query string, arguments []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
 
-	if ctx == nil || script == "" || scan == nil {
+	if ctx == nil || query == "" || scan == nil {
 		return zero, fmt.Errorf("invalid arguments to query single result")
 	}
 
-	row := executor.QueryRow(ctx, script, arguments...)
-
-	return scan(row)
+	return WithExecutorResult(ctx, connection, func(executor Executor) (T, error) {
+		row := executor.QueryRow(ctx, query, arguments...)
+		return scan(row)
+	})
 }
 
 // QueryMany executes a script with arguments and returns a slice of scanned values
-func QueryMany[T any](ctx context.Context, executor Executor, script string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
+func QueryMany[T any](ctx context.Context, connection Connection, query string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
 	var zero []T
-	if ctx == nil || script == "" || scan == nil {
+	if ctx == nil || query == "" || scan == nil {
 		return zero, fmt.Errorf("invalid arguments to query multiple results")
 	}
 
-	rows, err := executor.Query(ctx, script, arguments...)
-	if err != nil {
-		return zero, fmt.Errorf("failed to execute command: %w", err)
-	}
-	defer rows.Close()
-
-	var results []T
-
-	for rows.Next() {
-		result, err := scan(rows)
+	return WithExecutorResult(ctx, connection, func(executor Executor) ([]T, error) {
+		rows, err := executor.Query(ctx, query, arguments...)
 		if err != nil {
-			return zero, fmt.Errorf("failed to scan row: %w", err)
+			return zero, fmt.Errorf("failed to execute command: %w", err)
 		}
-		results = append(results, result)
-	}
+		defer rows.Close()
 
-	return results, nil
+		var results []T
+
+		for rows.Next() {
+			result, err := scan(rows)
+			if err != nil {
+				return zero, fmt.Errorf("failed to scan row: %w", err)
+			}
+			results = append(results, result)
+		}
+
+		return results, nil
+	})
 }
 
 // Batch executes multiple instances of the same script with different arguments
-func Batch(ctx context.Context, executor Executor, script string, argumentSets [][]any) error {
-	if ctx == nil || script == "" || len(argumentSets) == 0 {
+func Batch(ctx context.Context, connection Connection, query string, argumentSets [][]any) error {
+	if ctx == nil || query == "" || len(argumentSets) == 0 {
 		return fmt.Errorf("invalid arguments to execute batch")
 	}
 
-	batch := &pgx.Batch{}
+	return WithExecutor(ctx, connection, func(executor Executor) error {
+		batch := &pgx.Batch{}
 
-	for _, arguments := range argumentSets {
-		batch.Queue(script, arguments...)
-	}
+		for _, arguments := range argumentSets {
+			batch.Queue(query, arguments...)
+		}
 
-	results := executor.SendBatch(ctx, batch)
-	err := results.Close()
-	if err != nil {
-		return fmt.Errorf("failed to execute batch: %w", err)
-	}
+		results := executor.SendBatch(ctx, batch)
+		err := results.Close()
+		if err != nil {
+			return fmt.Errorf("failed to execute batch: %w", err)
+		}
 
-	return nil
+		return nil
+	})
 }

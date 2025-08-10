@@ -7,26 +7,20 @@ import (
 
 // UserSchema represents the user schema operations.
 type UserSchema struct {
-	connection database.Connection
+	database.Connection
 }
 
 // NewUserSchema creates a new instance of UserSchema.
 func NewUserSchema(connection database.Connection) *UserSchema {
-	return &UserSchema{
-		connection: connection,
-	}
+	return &UserSchema{connection}
 }
 
 // CreateTable creates the users-table in the database
 func (s *UserSchema) CreateTable(ctx context.Context) error {
-	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		return database.Execute(ctx, executor, CreateTableQuery)
-	})
+	return database.Execute(ctx, s.Connection, CreateTableQuery)
 }
 
 // DropTable removes the users-table from the database
 func (s *UserSchema) DropTable(ctx context.Context) error {
-	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
-		return database.Execute(ctx, executor, DropTableQuery)
-	})
+	return database.Execute(ctx, s.Connection, DropTableQuery)
 }

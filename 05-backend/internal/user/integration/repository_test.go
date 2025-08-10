@@ -54,12 +54,7 @@ var _ = Describe("User Repository", Ordered, func() {
 			fields := []string{infra.FieldId, infra.FieldEmail, infra.FieldDisplayName}
 			values := []any{user.GetId(), user.GetEmail(), user.GetDisplayName()}
 
-			// TODO: find a way to make the use of executor easier
-			executor, cleanup, err := suite.Database.GetExecutor(ctx)
-			Expect(err).ToNot(HaveOccurred(), "failed to get executor")
-			defer cleanup()
-
-			count, err := database.Count(ctx, executor, infra.TableName, fields, values)
+			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count users")
 			Expect(count).To(Equal(1), "expected 1 user to be created")
 		})
