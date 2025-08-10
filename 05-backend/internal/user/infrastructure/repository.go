@@ -9,14 +9,12 @@ import (
 
 // UserRepositoryImpl provides the concrete implementation of the UserRepository interface
 type UserRepositoryImpl struct {
-	connection database.Connection
+	database.Connection
 }
 
 // NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
 func NewUserRepositoryImpl(connection database.Connection) *UserRepositoryImpl {
-	return &UserRepositoryImpl{
-		connection: connection,
-	}
+	return &UserRepositoryImpl{connection}
 }
 
 // GetByEmail retrieves a user by their email address
@@ -37,7 +35,7 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	return database.WithExecutor(ctx, s.connection, func(executor database.Executor) error {
+	return database.WithExecutor(ctx, s.Connection, func(executor database.Executor) error {
 		fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
 		query := sql.BuildInsertQuery(TableName, fields)
 
@@ -72,23 +70,4 @@ func (s *UserRepositoryImpl) ReadOne(ctx context.Context, query string, values [
 func (s *UserRepositoryImpl) ReadMany(ctx context.Context, query string, values []any, scan database.ScannerFunc[*domain.UserEntity]) (*domain.UserEntity, error) {
 	// TODO: Implementation
 	return nil, nil
-}
-
-// Count returns the number of user entities matching the given criteria
-func (s *UserRepositoryImpl) Count(ctx context.Context, fields []string, values []any) (int, error) {
-	if len(fields) == 0 || len(values) == 0 {
-		return 0, nil
-	}
-
-	return database.WithExecutorResult(ctx, s.connection, func(executor database.Executor) (int, error) {
-		whereClauses := sql.CreateDollarClause(1, fields)
-		query := sql.BuildCountQuery(TableName, whereClauses)
-
-		var count int
-		err := executor.QueryRow(ctx, query, values...).Scan(&count)
-		if err != nil {
-			return 0, err
-		}
-		return count, nil
-	})
 }

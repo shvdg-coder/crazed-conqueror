@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
+	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 	"shvdg/crazed-conquerer/internal/user/domain"
@@ -53,7 +54,12 @@ var _ = Describe("User Repository", Ordered, func() {
 			fields := []string{infra.FieldId, infra.FieldEmail, infra.FieldDisplayName}
 			values := []any{user.GetId(), user.GetEmail(), user.GetDisplayName()}
 
-			count, err := userRepo.Count(ctx, fields, values)
+			// TODO: find a way to make the use of executor easier
+			executor, cleanup, err := suite.Database.GetExecutor(ctx)
+			Expect(err).ToNot(HaveOccurred(), "failed to get executor")
+			defer cleanup()
+
+			count, err := database.Count(ctx, executor, infra.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count users")
 			Expect(count).To(Equal(1), "expected 1 user to be created")
 		})

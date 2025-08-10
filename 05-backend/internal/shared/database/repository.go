@@ -11,5 +11,4 @@ type Repository[T any] interface {
 
 	ReadOne(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
 	ReadMany(ctx context.Context, query string, values []any, scan ScannerFunc[T]) (T, error)
-	Count(ctx context.Context, query string, values []any) (int, error)
 }

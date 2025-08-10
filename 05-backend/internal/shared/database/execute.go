@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -22,16 +23,19 @@ func Execute(ctx context.Context, executor Executor, script string, arguments ..
 }
 
 // Count executes a script with optional arguments and returns the number of rows affected
-func Count(ctx context.Context, executor Executor, script string, arguments ...any) (int, error) {
+func Count(ctx context.Context, executor Executor, table string, fields []string, values []any) (int, error) {
 	var count int
-	if ctx == nil || script == "" {
+
+	if ctx == nil || len(fields) == 0 || len(values) == 0 {
 		return count, fmt.Errorf("invalid arguments to count rows")
 	}
 
-	row := executor.QueryRow(ctx, script, arguments...)
-	err := row.Scan(&count)
+	whereClauses := sql.CreateDollarClause(1, fields)
+	query := sql.BuildCountQuery(table, whereClauses)
+
+	err := executor.QueryRow(ctx, query, values...).Scan(&count)
 	if err != nil {
-		return count, fmt.Errorf("failed to execute command: %w", err)
+		return count, fmt.Errorf("failed to count rows: %w", err)
 	}
 
 	return count, nil
