@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"context"
+	"errors"
 	"shvdg/crazed-conquerer/internal/domains/character-formation/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/sql"
@@ -48,6 +49,21 @@ func (r *CharacterFormationRepositoryImpl) Create(ctx context.Context, entities 
 	}
 
 	return database.Batch(ctx, r.Connection, query, argumentSets)
+}
+
+// Update implements Repository.Update
+func (r *CharacterFormationRepositoryImpl) Update(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
+	return errors.New("update operation not supported for character-formation associations")
+}
+
+// Upsert implements Repository.Upsert
+func (r *CharacterFormationRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
+	return errors.New("upsert operation not supported for character-formation associations")
+}
+
+// Delete implements Repository.Delete
+func (r *CharacterFormationRepositoryImpl) Delete(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
+	return errors.New("delete operation not supported for character-formation associations")
 }
 
 // ReadOne executes a query and returns a single character formation entity

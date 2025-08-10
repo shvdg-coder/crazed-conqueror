@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"context"
+	"errors"
 	"shvdg/crazed-conquerer/internal/domains/formation/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/sql"
@@ -23,6 +24,26 @@ func (s *FormationRepositoryImpl) GetById(ctx context.Context, id string) (*doma
 	whereClause := sql.CreateDollarClause(1, []string{FieldId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
 	return s.ReadOne(ctx, query, []any{id}, ScanFormationEntity)
+}
+
+// Create implements Repository.Create
+func (s *FormationRepositoryImpl) Create(ctx context.Context, entities ...*domain.FormationEntity) error {
+	return errors.New("operation not supported")
+}
+
+// Update implements Repository.Update
+func (s *FormationRepositoryImpl) Update(ctx context.Context, entities ...*domain.FormationEntity) error {
+	return errors.New("operation not supported")
+}
+
+// Upsert implements Repository.Upsert
+func (s *FormationRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.FormationEntity) error {
+	return errors.New("operation not supported")
+}
+
+// Delete implements Repository.Delete
+func (s *FormationRepositoryImpl) Delete(ctx context.Context, entities ...*domain.FormationEntity) error {
+	return errors.New("operation not supported")
 }
 
 // ReadOne executes a query and returns a single formation entity
