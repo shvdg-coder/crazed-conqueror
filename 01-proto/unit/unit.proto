@@ -4,7 +4,7 @@ import "01-proto/shared/enum_factions.proto";
 
 package unit;
 
-option go_package = "shvdg/crazed-conquerer/05-backend/internal/domains/unit/domain;domain";
+option go_package = "shvdg/crazed-conquerer/internal/domains/unit/domain;domain";
 
 // UnitList represents a collection of units.
 message UnitList{

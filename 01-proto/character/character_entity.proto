@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package character;
 
-option go_package = "shvdg/crazed-conquerer/05-backend/internal/domains/character/domain;domain";
+option go_package = "shvdg/crazed-conquerer/internal/domains/character/domain;domain";
 
 import "google/protobuf/timestamp.proto";
 

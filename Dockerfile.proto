@@ -47,5 +47,5 @@ FROM alpine:3.21
 
 WORKDIR /artifacts
 
-COPY --from=proto-go /proto-go-out/ ./go/
+COPY --from=proto-go /proto-go-out ./go/
 COPY --from=proto-dart /proto-dart-out ./dart/
