@@ -18,16 +18,16 @@ func NewCharacterUnitRepositoryImpl(connection database.Connection) *CharacterUn
 	return &CharacterUnitRepositoryImpl{connection}
 }
 
-// GetByCharacterID retrieves a character unit by their character ID
-func (s *CharacterUnitRepositoryImpl) GetByCharacterID(ctx context.Context, characterID string) ([]*domain.CharacterUnitEntity, error) {
+// GetByCharacterId retrieves a character unit by their character ID
+func (s *CharacterUnitRepositoryImpl) GetByCharacterId(ctx context.Context, characterID string) ([]*domain.CharacterUnitEntity, error) {
 	fields := []string{FieldCharacterId, FieldUnitId}
 	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
 	return s.ReadMany(ctx, query, []any{characterID}, ScanCharacterUnitEntity)
 }
 
-// GetByUnitID retrieves a character unit by their unit ID
-func (s *CharacterUnitRepositoryImpl) GetByUnitID(ctx context.Context, unitID string) ([]*domain.CharacterUnitEntity, error) {
+// GetByUnitId retrieves a character unit by their unit ID
+func (s *CharacterUnitRepositoryImpl) GetByUnitId(ctx context.Context, unitID string) ([]*domain.CharacterUnitEntity, error) {
 	fields := []string{FieldCharacterId, FieldUnitId}
 	whereClause := sql.CreateDollarClause(1, []string{FieldUnitId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)

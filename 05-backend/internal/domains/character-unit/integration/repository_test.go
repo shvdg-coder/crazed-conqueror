@@ -81,7 +81,7 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 
 	Context("When retrieving character units by character ID", func() {
 		It("should return character unit associations for the given character ID", func() {
-			characterUnits, err := characterUnitRepo.GetByCharacterID(ctx, dummyCharacter.GetId())
+			characterUnits, err := characterUnitRepo.GetByCharacterId(ctx, dummyCharacter.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to get character units by character ID")
 			Expect(characterUnits).ToNot(BeNil(), "expected to find character units")
 			Expect(characterUnits).To(HaveLen(1), "expected exactly one character unit association")
@@ -94,7 +94,7 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 
 	Context("When retrieving character units by unit ID", func() {
 		It("should return character unit associations for the given unit ID", func() {
-			characterUnits, err := characterUnitRepo.GetByUnitID(ctx, dummyUnit.GetId())
+			characterUnits, err := characterUnitRepo.GetByUnitId(ctx, dummyUnit.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to get character units by unit ID")
 			Expect(characterUnits).ToNot(BeNil(), "expected to find character units")
 			Expect(characterUnits).To(HaveLen(1), "expected exactly one character unit association")

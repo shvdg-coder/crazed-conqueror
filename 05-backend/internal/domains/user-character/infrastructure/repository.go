@@ -18,18 +18,18 @@ func NewUserCharacterRepositoryImpl(connection database.Connection) *UserCharact
 	return &UserCharacterRepositoryImpl{connection}
 }
 
-// GetByUserID retrieves all character associations for a given user ID
-func (s *UserCharacterRepositoryImpl) GetByUserID(ctx context.Context, userID string) ([]*domain.UserCharacterEntity, error) {
-	fields := []string{FieldUserID, FieldCharacterID}
-	whereClause := sql.CreateDollarClause(1, []string{FieldUserID})
+// GetByUserId retrieves all character associations for a given user ID
+func (s *UserCharacterRepositoryImpl) GetByUserId(ctx context.Context, userID string) ([]*domain.UserCharacterEntity, error) {
+	fields := []string{FieldUserId, FieldCharacterId}
+	whereClause := sql.CreateDollarClause(1, []string{FieldUserId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
 	return s.ReadMany(ctx, query, []any{userID}, ScanUserCharacterEntity)
 }
 
-// GetByCharacterID retrieves all user associations for a given character ID
-func (s *UserCharacterRepositoryImpl) GetByCharacterID(ctx context.Context, characterID string) ([]*domain.UserCharacterEntity, error) {
-	fields := []string{FieldUserID, FieldCharacterID}
-	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterID})
+// GetByCharacterId retrieves all user associations for a given character ID
+func (s *UserCharacterRepositoryImpl) GetByCharacterId(ctx context.Context, characterID string) ([]*domain.UserCharacterEntity, error) {
+	fields := []string{FieldUserId, FieldCharacterId}
+	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterId})
 	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
 	return s.ReadMany(ctx, query, []any{characterID}, ScanUserCharacterEntity)
 }
@@ -40,7 +40,7 @@ func (s *UserCharacterRepositoryImpl) Create(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	fields := []string{FieldUserID, FieldCharacterID}
+	fields := []string{FieldUserId, FieldCharacterId}
 	query := sql.BuildInsertQuery(TableName, fields)
 
 	argumentSets := make([][]any, len(entities))
@@ -67,7 +67,7 @@ func (s *UserCharacterRepositoryImpl) Delete(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	fields := []string{FieldUserID, FieldCharacterID}
+	fields := []string{FieldUserId, FieldCharacterId}
 	inClause := sql.CreateTupleInClause(fields, len(entities), 1)
 	query := sql.BuildDeleteQuery(TableName, []string{inClause})
 

@@ -74,7 +74,7 @@ var _ = Describe("User Character Repository", Ordered, func() {
 
 	Context("When retrieving user characters by user ID", func() {
 		It("should return user character associations for the given user ID", func() {
-			userCharacters, err := userCharacterRepo.GetByUserID(ctx, dummyUser.GetId())
+			userCharacters, err := userCharacterRepo.GetByUserId(ctx, dummyUser.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to get user characters by user ID")
 			Expect(userCharacters).ToNot(BeNil(), "expected to find user characters")
 			Expect(userCharacters).To(HaveLen(1), "expected exactly one user character association")
@@ -87,7 +87,7 @@ var _ = Describe("User Character Repository", Ordered, func() {
 
 	Context("When retrieving user characters by character ID", func() {
 		It("should return user character associations for the given character ID", func() {
-			userCharacters, err := userCharacterRepo.GetByCharacterID(ctx, dummyCharacter.GetId())
+			userCharacters, err := userCharacterRepo.GetByCharacterId(ctx, dummyCharacter.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to get user characters by character ID")
 			Expect(userCharacters).ToNot(BeNil(), "expected to find user characters")
 			Expect(userCharacters).To(HaveLen(1), "expected exactly one user character association")
@@ -103,7 +103,7 @@ var _ = Describe("User Character Repository", Ordered, func() {
 			err := userCharacterRepo.Delete(ctx, dummyUserCharacter)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete user-character association")
 
-			userCharacters, err := userCharacterRepo.GetByUserID(ctx, dummyUser.GetId())
+			userCharacters, err := userCharacterRepo.GetByUserId(ctx, dummyUser.GetId())
 			Expect(err).ToNot(HaveOccurred(), "failed to get user characters")
 			Expect(userCharacters).To(BeEmpty(), "expected user-character association to be deleted")
 		})
