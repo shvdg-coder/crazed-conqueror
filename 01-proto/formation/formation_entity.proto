@@ -10,10 +10,15 @@ import "google/protobuf/timestamp.proto";
 message FormationEntity {
   string id = 1;
 
-  repeated FormationTileEntity tiles = 2;
+  repeated FormationRowEntity rows = 2;
 
   google.protobuf.Timestamp created_at = 3;
   google.protobuf.Timestamp updated_at = 4;
+}
+
+// FormationRow represents a single row in the formation
+message FormationRowEntity {
+  repeated FormationTileEntity tiles = 1;
 }
 
 // FormationTile represents a single tile in the formation grid
