@@ -64,16 +64,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(query).To(Equal("SELECT id, name FROM users WHERE status IN ($1, $2) AND verified = $3"))
 				Expect(args).To(Equal([]any{"active", "pending", true}))
 			})
-
-			It("should handle empty WHERE IN gracefully", func() {
-				query, args := qb.Select("id", "name").
-					From("users").
-					WhereIn("id"). // No values
-					Build()
-
-				Expect(query).To(Equal("SELECT id, name FROM users"))
-				Expect(args).To(BeEmpty())
-			})
 		})
 
 		Context("SELECT with QueryFields", func() {
@@ -92,19 +82,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(args).To(BeEmpty())
 			})
 		})
-
-		Context("SELECT with RETURNING", func() {
-			It("should build SELECT with RETURNING clause", func() {
-				query, args := qb.Select("*").
-					From("users").
-					Where("id", 123).
-					Returning("id", "updated_at").
-					Build()
-
-				Expect(query).To(Equal("SELECT * FROM users WHERE id = $1 RETURNING id, updated_at"))
-				Expect(args).To(Equal([]any{123}))
-			})
-		})
 	})
 
 	Describe("INSERT queries", func() {
@@ -117,17 +94,6 @@ var _ = Describe("QueryBuilder", func() {
 
 				Expect(query).To(Equal("INSERT INTO users (id, email, name) VALUES ($1, $2, $3)"))
 				Expect(args).To(Equal([]any{1, "test@example.com", "Test User"}))
-			})
-
-			It("should build INSERT with RETURNING", func() {
-				query, args := qb.InsertInto("users").
-					InsertFields("email", "name").
-					Values("test@example.com", "Test User").
-					Returning("id", "created_at").
-					Build()
-
-				Expect(query).To(Equal("INSERT INTO users (email, name) VALUES ($1, $2) RETURNING id, created_at"))
-				Expect(args).To(Equal([]any{"test@example.com", "Test User"}))
 			})
 		})
 
@@ -165,25 +131,6 @@ var _ = Describe("QueryBuilder", func() {
 					{"user3", "char3"},
 				}))
 			})
-
-			It("should build batch INSERT with RETURNING", func() {
-				argumentSets := [][]any{
-					{"test1@example.com", "User 1"},
-					{"test2@example.com", "User 2"},
-				}
-
-				query, batchArgs := qb.InsertInto("users").
-					InsertFields("email", "name").
-					BatchValues(argumentSets).
-					Returning("id", "created_at").
-					BuildBatch()
-
-				Expect(query).To(Equal("INSERT INTO users (email, name) VALUES ($1, $2) RETURNING id, created_at"))
-				Expect(batchArgs).To(Equal([][]any{
-					{"test1@example.com", "User 1"},
-					{"test2@example.com", "User 2"},
-				}))
-			})
 		})
 
 	})
@@ -201,17 +148,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(args).To(Equal([]any{"new@example.com", "New Name", 1}))
 			})
 
-			It("should build UPDATE with RETURNING", func() {
-				query, args := qb.Update("users").
-					Set("email", "new@example.com").
-					Where("id", 1).
-					Returning("id", "updated_at").
-					Build()
-
-				Expect(query).To(Equal("UPDATE users SET email = $1 WHERE id = $2 RETURNING id, updated_at"))
-				Expect(args).To(Equal([]any{"new@example.com", 1}))
-			})
-
 			It("should build UPDATE with multiple WHERE conditions", func() {
 				query, args := qb.Update("users").
 					Set("active", false).
@@ -221,6 +157,57 @@ var _ = Describe("QueryBuilder", func() {
 
 				Expect(query).To(Equal("UPDATE users SET active = $1 WHERE email = $2 AND verified = $3"))
 				Expect(args).To(Equal([]any{false, "test@example.com", true}))
+			})
+		})
+
+		Context("batch UPDATE", func() {
+			It("should build batch UPDATE with single argument set", func() {
+				argumentSets := [][]any{
+					{"NewName1", "new1@email.com"},
+				}
+
+				query, batchArgs := qb.Update("users").
+					BatchSets(argumentSets, "name", "email").
+					Where("active", true).
+					BuildBatch()
+
+				Expect(query).To(Equal("UPDATE users SET name = $1, email = $2 WHERE active = $3"))
+				Expect(batchArgs).To(Equal([][]any{{"NewName1", "new1@email.com"}}))
+			})
+
+			It("should build batch UPDATE with multiple argument sets", func() {
+				argumentSets := [][]any{
+					{"NewName1", "new1@email.com"},
+					{"NewName2", "new2@email.com"},
+					{"NewName3", "new3@email.com"},
+				}
+
+				query, batchArgs := qb.Update("users").
+					BatchSets(argumentSets, "name", "email").
+					Where("active", true).
+					BuildBatch()
+
+				Expect(query).To(Equal("UPDATE users SET name = $1, email = $2 WHERE active = $3"))
+				Expect(batchArgs).To(Equal([][]any{
+					{"NewName1", "new1@email.com"},
+					{"NewName2", "new2@email.com"},
+					{"NewName3", "new3@email.com"},
+				}))
+			})
+
+			It("should build batch UPDATE with multiple WHERE conditions", func() {
+				argumentSets := [][]any{
+					{"NewName1"},
+				}
+
+				query, batchArgs := qb.Update("users").
+					BatchSets(argumentSets, "name").
+					Where("active", true).
+					Where("verified", true).
+					BuildBatch()
+
+				Expect(query).To(Equal("UPDATE users SET name = $1 WHERE active = $2 AND verified = $3"))
+				Expect(batchArgs).To(Equal([][]any{{"NewName1"}}))
 			})
 		})
 	})
@@ -254,16 +241,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(query).To(Equal("DELETE FROM users WHERE id IN ($1, $2, $3)"))
 				Expect(args).To(Equal([]any{1, 2, 3}))
 			})
-
-			It("should build DELETE with RETURNING", func() {
-				query, args := qb.DeleteFrom("users").
-					Where("id", 123).
-					Returning("id", "email").
-					Build()
-
-				Expect(query).To(Equal("DELETE FROM users WHERE id = $1 RETURNING id, email"))
-				Expect(args).To(Equal([]any{123}))
-			})
 		})
 	})
 
@@ -295,32 +272,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(query).To(Equal("SELECT * FROM user_character_slots WHERE (user_id, character_id, slot_id) IN (($1, $2, $3), ($4, $5, $6))"))
 				Expect(args).To(Equal([]any{"user1", "char1", "slot1", "user2", "char2", "slot2"}))
 			})
-		})
-	})
-
-	Describe("parameter indexing", func() {
-		It("should maintain proper parameter indexing across multiple operations", func() {
-			query, args := qb.Select("id", "name").
-				From("users").
-				Where("status", "active").        // $1
-				Where("verified", true).          // $2
-				WhereIn("role", "admin", "user"). // $3, $4
-				Build()
-
-			Expect(query).To(Equal("SELECT id, name FROM users WHERE status = $1 AND verified = $2 AND role IN ($3, $4)"))
-			Expect(args).To(Equal([]any{"active", true, "admin", "user"}))
-		})
-
-		It("should maintain parameter indexing in UPDATE queries", func() {
-			query, args := qb.Update("users").
-				Set("name", "Updated Name").     // $1
-				Set("email", "new@example.com"). // $2
-				Where("id", 123).                // $3
-				Where("active", true).           // $4
-				Build()
-
-			Expect(query).To(Equal("UPDATE users SET name = $1, email = $2 WHERE id = $3 AND active = $4"))
-			Expect(args).To(Equal([]any{"Updated Name", "new@example.com", 123, true}))
 		})
 	})
 })

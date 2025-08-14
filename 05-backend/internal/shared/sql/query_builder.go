@@ -249,6 +249,28 @@ func (qb *QueryBuilder) Set(field string, value any) *QueryBuilder {
 	return qb
 }
 
+// BatchSets adds SET clauses using numbered placeholders for batch UPDATE operations
+func (qb *QueryBuilder) BatchSets(argumentSets [][]any, setFields ...string) *QueryBuilder {
+	if len(argumentSets) == 0 || len(setFields) == 0 {
+		return qb
+	}
+
+	qb.batchArgs = argumentSets
+
+	qb.query.WriteString(" SET ")
+
+	setClauses := make([]string, len(setFields))
+	for i, field := range setFields {
+		setClauses[i] = field + " = $" + strconv.Itoa(qb.paramIndex)
+		qb.paramIndex++
+	}
+
+	qb.query.WriteString(strings.Join(setClauses, ", "))
+	qb.hasSet = true
+
+	return qb
+}
+
 // DELETE Methods
 
 // DeleteFrom adds a DELETE FROM clause
