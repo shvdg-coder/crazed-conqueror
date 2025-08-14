@@ -91,15 +91,15 @@ func QueryMany[T any](ctx context.Context, connection Connection, query string, 
 }
 
 // Batch executes multiple instances of the same script with different arguments
-func Batch(ctx context.Context, connection Connection, query string, argumentSets [][]any) error {
-	if ctx == nil || query == "" || len(argumentSets) == 0 {
+func Batch(ctx context.Context, connection Connection, query string, argSets [][]any) error {
+	if ctx == nil || query == "" || len(argSets) == 0 {
 		return fmt.Errorf("invalid arguments to execute batch")
 	}
 
 	return WithExecutor(ctx, connection, func(executor Executor) error {
 		batch := &pgx.Batch{}
 
-		for _, arguments := range argumentSets {
+		for _, arguments := range argSets {
 			batch.Queue(query, arguments...)
 		}
 
