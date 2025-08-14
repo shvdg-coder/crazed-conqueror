@@ -54,17 +54,18 @@ func (s *UnitRepositoryImpl) Update(ctx context.Context, entities ...*domain.Uni
 		return nil
 	}
 
-	fields := []string{FieldVocation, FieldFaction, FieldName, FieldLevel}
-	setClauses := sql.CreateDollarClause(1, fields)
-	whereClauses := sql.CreateDollarClause(5, []string{FieldId})
-	query := sql.BuildUpdateQuery(TableName, setClauses, whereClauses)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel(), entity.GetId()}
+		argSets[i] = []any{entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel(), entity.GetId()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		Update(TableName).
+		BatchSets(argSets, FieldVocation, FieldFaction, FieldName, FieldLevel).
+		Where(FieldId).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Upsert inserts or updates one or more unit entities in the database
@@ -73,17 +74,18 @@ func (s *UnitRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.Uni
 		return nil
 	}
 
-	insertFields := []string{FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel}
-	keyFields := []string{FieldId}
-	updateFields := []string{FieldVocation, FieldFaction, FieldName, FieldLevel}
-	query := sql.BuildUpsertQuery(TableName, insertFields, keyFields, updateFields)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
+		argSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel).
+		BatchUpsert(argSets, []string{FieldId}, FieldVocation, FieldFaction, FieldName, FieldLevel).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Delete removes one or more unit entities from the database
@@ -92,15 +94,17 @@ func (s *UnitRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Uni
 		return nil
 	}
 
-	inClause := sql.CreateTupleInClause([]string{FieldId}, len(entities), 1)
-	query := sql.BuildDeleteQuery(TableName, []string{inClause})
-
-	values := make([]any, len(entities))
+	ids := make([]any, len(entities))
 	for i, entity := range entities {
-		values[i] = entity.GetId()
+		ids[i] = entity.GetId()
 	}
 
-	return database.Execute(ctx, s.Connection, query, values...)
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereIn(FieldId, ids...).
+		Build()
+
+	return database.Execute(ctx, s.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single unit entity

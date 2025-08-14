@@ -44,15 +44,18 @@ func (s *CharacterUnitRepositoryImpl) Create(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	fields := []string{FieldCharacterId, FieldUnitId}
-	query := sql.BuildInsertQuery(TableName, fields)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetCharacterId(), entity.GetUnitId()}
+		argSets[i] = []any{entity.GetCharacterId(), entity.GetUnitId()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldCharacterId, FieldUnitId).
+		BatchValues(argSets).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Update is not supported for character-unit associations
@@ -71,16 +74,17 @@ func (s *CharacterUnitRepositoryImpl) Delete(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	inClause := sql.CreateTupleInClause([]string{FieldCharacterId, FieldUnitId}, len(entities), 1)
-	query := sql.BuildDeleteQuery(TableName, []string{inClause})
-
-	values := make([]any, len(entities)*2)
+	tuples := make([][]any, len(entities))
 	for i, entity := range entities {
-		values[i*2] = entity.GetCharacterId()
-		values[i*2+1] = entity.GetUnitId()
+		tuples[i] = []any{entity.GetCharacterId(), entity.GetUnitId()}
 	}
 
-	return database.Execute(ctx, s.Connection, query, values...)
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereTupleIn(tuples, FieldCharacterId, FieldUnitId).
+		Build()
+
+	return database.Execute(ctx, s.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single character unit entity

@@ -64,18 +64,18 @@ func (s *UserRepositoryImpl) Update(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	// For batch operations, we still use the old approach since QueryBuilder is designed for single operations
-	fields := []string{FieldEmail, FieldPassword, FieldDisplayName}
-	setClauses := sql.CreateDollarClause(1, fields)
-	whereClauses := sql.CreateDollarClause(4, []string{FieldId})
-	query := sql.BuildUpdateQuery(TableName, setClauses, whereClauses)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName(), entity.GetId()}
+		argSets[i] = []any{entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName(), entity.GetId()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		Update(TableName).
+		BatchSets(argSets, FieldEmail, FieldPassword, FieldDisplayName).
+		Where(FieldId).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Upsert inserts or updates one or more user entities in the database
@@ -84,18 +84,18 @@ func (s *UserRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	// For batch operations, we still use the old approach since QueryBuilder is designed for single operations
-	insertFields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
-	keyFields := []string{FieldId}
-	updateFields := []string{FieldEmail, FieldPassword, FieldDisplayName}
-	query := sql.BuildUpsertQuery(TableName, insertFields, keyFields, updateFields)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
+		argSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldId, FieldEmail, FieldPassword, FieldDisplayName).
+		BatchUpsert(argSets, []string{FieldId}, FieldEmail, FieldPassword, FieldDisplayName).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Delete removes one or more user entities from the database
@@ -104,16 +104,17 @@ func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	// For DELETE operations, we still use the old approach since QueryBuilder doesn't implement DELETE yet
-	inClause := sql.CreateTupleInClause([]string{FieldId}, len(entities), 1)
-	query := sql.BuildDeleteQuery(TableName, []string{inClause})
-
-	values := make([]any, len(entities))
+	ids := make([]any, len(entities))
 	for i, entity := range entities {
-		values[i] = entity.GetId()
+		ids[i] = entity.GetId()
 	}
 
-	return database.Execute(ctx, s.Connection, query, values...)
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereIn(FieldId, ids...).
+		Build()
+
+	return database.Execute(ctx, s.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single user entity

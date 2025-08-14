@@ -331,6 +331,32 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(query).To(Equal("DELETE FROM users WHERE id IN ($1, $2, $3)"))
 				Expect(args).To(Equal([]any{1, 2, 3}))
 			})
+
+			It("should build DELETE with single tuple", func() {
+				tuples := [][]any{
+					{"user1", "char1"},
+				}
+				query, args := qb.DeleteFrom("user_characters").
+					WhereTupleIn(tuples, "user_id", "character_id").
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM user_characters WHERE (user_id, character_id) IN (($1, $2))"))
+				Expect(args).To(Equal([]any{"user1", "char1"}))
+			})
+
+			It("should build DELETE with multiple tuples)", func() {
+				tuples := [][]any{
+					{"user1", "char1"},
+					{"user2", "char2"},
+					{"user3", "char3"},
+				}
+				query, args := qb.DeleteFrom("user_characters").
+					WhereTupleIn(tuples, "user_id", "character_id").
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM user_characters WHERE (user_id, character_id) IN (($1, $2), ($3, $4), ($5, $6))"))
+				Expect(args).To(Equal([]any{"user1", "char1", "user2", "char2", "user3", "char3"}))
+			})
 		})
 	})
 
