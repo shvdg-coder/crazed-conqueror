@@ -9,6 +9,7 @@ import (
 type QueryBuilder struct {
 	query        strings.Builder
 	args         []any
+	batchArgs    [][]any
 	paramIndex   int
 	fields       []QueryField
 	hasWhere     bool
@@ -48,6 +49,11 @@ func (qb *QueryBuilder) hasSetClause() bool {
 // Build returns the final query string and args
 func (qb *QueryBuilder) Build() (string, []any) {
 	return qb.String(), qb.Arguments()
+}
+
+// BuildBatch returns the final query string and batch args
+func (qb *QueryBuilder) BuildBatch() (string, [][]any) {
+	return qb.String(), qb.batchArgs
 }
 
 // SELECT Methods
@@ -184,6 +190,30 @@ func (qb *QueryBuilder) Values(values ...any) *QueryBuilder {
 		placeholders[i] = "$" + strconv.Itoa(qb.paramIndex)
 		qb.args = append(qb.args, value)
 		qb.paramIndex++
+	}
+
+	qb.query.WriteString(strings.Join(placeholders, ", "))
+	qb.query.WriteString(")")
+
+	return qb
+}
+
+// BatchValues adds a template VALUES clause for batch INSERT operations
+func (qb *QueryBuilder) BatchValues(argumentSets [][]any) *QueryBuilder {
+	if len(argumentSets) == 0 {
+		return qb
+	}
+
+	qb.batchArgs = argumentSets
+
+	qb.query.WriteString(" (")
+	qb.query.WriteString(strings.Join(qb.insertFields, ", "))
+	qb.query.WriteString(") VALUES (")
+
+	fieldCount := len(qb.insertFields)
+	placeholders := make([]string, fieldCount)
+	for i := 0; i < fieldCount; i++ {
+		placeholders[i] = "$" + strconv.Itoa(i+1)
 	}
 
 	qb.query.WriteString(strings.Join(placeholders, ", "))

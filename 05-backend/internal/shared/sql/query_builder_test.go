@@ -131,6 +131,61 @@ var _ = Describe("QueryBuilder", func() {
 			})
 		})
 
+		Context("batch INSERT", func() {
+			It("should build batch INSERT with single argument set", func() {
+				argumentSets := [][]any{
+					{"user1", "char1"},
+				}
+
+				query, batchArgs := qb.InsertInto("user_characters").
+					InsertFields("user_id", "character_id").
+					BatchValues(argumentSets).
+					BuildBatch()
+
+				Expect(query).To(Equal("INSERT INTO user_characters (user_id, character_id) VALUES ($1, $2)"))
+				Expect(batchArgs).To(Equal([][]any{{"user1", "char1"}}))
+			})
+
+			It("should build batch INSERT with multiple argument sets", func() {
+				argumentSets := [][]any{
+					{"user1", "char1"},
+					{"user2", "char2"},
+					{"user3", "char3"},
+				}
+
+				query, batchArgs := qb.InsertInto("user_characters").
+					InsertFields("user_id", "character_id").
+					BatchValues(argumentSets).
+					BuildBatch()
+
+				Expect(query).To(Equal("INSERT INTO user_characters (user_id, character_id) VALUES ($1, $2)"))
+				Expect(batchArgs).To(Equal([][]any{
+					{"user1", "char1"},
+					{"user2", "char2"},
+					{"user3", "char3"},
+				}))
+			})
+
+			It("should build batch INSERT with RETURNING", func() {
+				argumentSets := [][]any{
+					{"test1@example.com", "User 1"},
+					{"test2@example.com", "User 2"},
+				}
+
+				query, batchArgs := qb.InsertInto("users").
+					InsertFields("email", "name").
+					BatchValues(argumentSets).
+					Returning("id", "created_at").
+					BuildBatch()
+
+				Expect(query).To(Equal("INSERT INTO users (email, name) VALUES ($1, $2) RETURNING id, created_at"))
+				Expect(batchArgs).To(Equal([][]any{
+					{"test1@example.com", "User 1"},
+					{"test2@example.com", "User 2"},
+				}))
+			})
+		})
+
 	})
 
 	Describe("UPDATE queries", func() {
