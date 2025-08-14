@@ -45,14 +45,17 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 	}
 
 	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
-	query := sql.BuildInsertQuery(TableName, fields)
-
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(fields...).
+		BatchValues(argumentSets).
+		BuildBatch()
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Update modifies one or more user entities in the database

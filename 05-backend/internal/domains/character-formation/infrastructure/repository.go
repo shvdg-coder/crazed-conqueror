@@ -20,18 +20,22 @@ func NewCharacterFormationRepositoryImpl(connection database.Connection) *Charac
 
 // GetByCharacterId retrieves all character formation entities for a given character id
 func (r *CharacterFormationRepositoryImpl) GetByCharacterId(ctx context.Context, characterId string) ([]*domain.CharacterFormationEntity, error) {
-	fields := []string{FieldCharacterId, FieldFormationId}
-	whereClause := sql.CreateDollarClause(1, []string{FieldCharacterId})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return r.ReadMany(ctx, query, []any{characterId}, ScanCharacterFormationEntity)
+	query, args := sql.NewQuery().
+		Select(FieldCharacterId, FieldFormationId).
+		From(TableName).
+		Where(FieldCharacterId, characterId).
+		Build()
+	return r.ReadMany(ctx, query, args, ScanCharacterFormationEntity)
 }
 
 // GetByFormationId retrieves all character formation entities for a given formation id
 func (r *CharacterFormationRepositoryImpl) GetByFormationId(ctx context.Context, formationId string) ([]*domain.CharacterFormationEntity, error) {
-	fields := []string{FieldCharacterId, FieldFormationId}
-	whereClause := sql.CreateDollarClause(1, []string{FieldFormationId})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return r.ReadMany(ctx, query, []any{formationId}, ScanCharacterFormationEntity)
+	query, args := sql.NewQuery().
+		Select(FieldCharacterId, FieldFormationId).
+		From(TableName).
+		Where(FieldFormationId, formationId).
+		Build()
+	return r.ReadMany(ctx, query, args, ScanCharacterFormationEntity)
 }
 
 // Create inserts one or more character formation entities into the database
@@ -41,14 +45,18 @@ func (r *CharacterFormationRepositoryImpl) Create(ctx context.Context, entities 
 	}
 
 	fields := []string{FieldCharacterId, FieldFormationId}
-	query := sql.BuildInsertQuery(TableName, fields)
-
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetCharacterId(), entity.GetFormationId()}
 	}
 
-	return database.Batch(ctx, r.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(fields...).
+		BatchValues(argumentSets).
+		BuildBatch()
+
+	return database.Batch(ctx, r.Connection, query, batchArgs)
 }
 
 // Update implements Repository.Update

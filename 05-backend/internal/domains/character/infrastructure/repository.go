@@ -19,10 +19,12 @@ func NewCharacterRepositoryImpl(connection database.Connection) *CharacterReposi
 
 // GetById retrieves a character by their ID
 func (s *CharacterRepositoryImpl) GetById(ctx context.Context, id string) (*domain.CharacterEntity, error) {
-	fields := []string{FieldId, FieldName, FieldCreatedAt, FieldUpdatedAt}
-	whereClause := sql.CreateDollarClause(1, []string{FieldId})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadOne(ctx, query, []any{id}, ScanCharacter)
+	query, args := sql.NewQuery().
+		Select(FieldId, FieldName, FieldCreatedAt, FieldUpdatedAt).
+		From(TableName).
+		Where(FieldId, id).
+		Build()
+	return s.ReadOne(ctx, query, args, ScanCharacter)
 }
 
 // Create inserts one or more character entities into the database
@@ -32,14 +34,18 @@ func (s *CharacterRepositoryImpl) Create(ctx context.Context, entities ...*domai
 	}
 
 	fields := []string{FieldId, FieldName}
-	query := sql.BuildInsertQuery(TableName, fields)
-
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetName()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(fields...).
+		BatchValues(argumentSets).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Update modifies one or more character entities in the database

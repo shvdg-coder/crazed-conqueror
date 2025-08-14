@@ -19,10 +19,12 @@ func NewUnitRepositoryImpl(connection database.Connection) *UnitRepositoryImpl {
 
 // GetById retrieves a unit by their ID
 func (s *UnitRepositoryImpl) GetById(ctx context.Context, id string) (*domain.UnitEntity, error) {
-	fields := []string{FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel, FieldCreatedAt, FieldUpdatedAt}
-	whereClause := sql.CreateDollarClause(1, []string{FieldId})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadOne(ctx, query, []any{id}, ScanUnitEntity)
+	query, args := sql.NewQuery().
+		Select(FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel, FieldCreatedAt, FieldUpdatedAt).
+		From(TableName).
+		Where(FieldId, id).
+		Build()
+	return s.ReadOne(ctx, query, args, ScanUnitEntity)
 }
 
 // Create inserts one or more unit entities into the database
@@ -32,14 +34,18 @@ func (s *UnitRepositoryImpl) Create(ctx context.Context, entities ...*domain.Uni
 	}
 
 	fields := []string{FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel}
-	query := sql.BuildInsertQuery(TableName, fields)
-
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(fields...).
+		BatchValues(argumentSets).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Update modifies one or more unit entities in the database
