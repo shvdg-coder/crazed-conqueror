@@ -33,7 +33,6 @@ func (s *UnitRepositoryImpl) Create(ctx context.Context, entities ...*domain.Uni
 		return nil
 	}
 
-	fields := []string{FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel}
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
@@ -41,7 +40,7 @@ func (s *UnitRepositoryImpl) Create(ctx context.Context, entities ...*domain.Uni
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
-		InsertFields(fields...).
+		InsertFields(FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel).
 		BatchValues(argumentSets).
 		BuildBatch()
 

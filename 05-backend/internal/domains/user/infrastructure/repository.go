@@ -44,7 +44,6 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
@@ -52,7 +51,7 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
-		InsertFields(fields...).
+		InsertFields(FieldId, FieldEmail, FieldPassword, FieldDisplayName).
 		BatchValues(argumentSets).
 		BuildBatch()
 	return database.Batch(ctx, s.Connection, query, batchArgs)

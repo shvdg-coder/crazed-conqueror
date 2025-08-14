@@ -44,7 +44,6 @@ func (r *CharacterFormationRepositoryImpl) Create(ctx context.Context, entities 
 		return nil
 	}
 
-	fields := []string{FieldCharacterId, FieldFormationId}
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetCharacterId(), entity.GetFormationId()}
@@ -52,7 +51,7 @@ func (r *CharacterFormationRepositoryImpl) Create(ctx context.Context, entities 
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
-		InsertFields(fields...).
+		InsertFields(FieldCharacterId, FieldFormationId).
 		BatchValues(argumentSets).
 		BuildBatch()
 
