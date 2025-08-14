@@ -33,15 +33,15 @@ func (s *CharacterRepositoryImpl) Create(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetName()}
+		argSets[i] = []any{entity.GetId(), entity.GetName()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldId, FieldName).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 
 	return database.Batch(ctx, s.Connection, query, batchArgs)
@@ -53,17 +53,18 @@ func (s *CharacterRepositoryImpl) Update(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	fields := []string{FieldName}
-	setClauses := sql.CreateDollarClause(1, fields)
-	whereClauses := sql.CreateDollarClause(2, []string{FieldId})
-	query := sql.BuildUpdateQuery(TableName, setClauses, whereClauses)
-
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetName(), entity.GetId()}
+		argSets[i] = []any{entity.GetName(), entity.GetId()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		Update(TableName).
+		BatchSets(argSets, FieldName).
+		Where(FieldId).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Upsert inserts or updates one or more character entities in the database
@@ -72,15 +73,15 @@ func (s *CharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetName()}
+		argSets[i] = []any{entity.GetId(), entity.GetName()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldId, FieldName).
-		BatchUpsert(argumentSets, []string{FieldId}, FieldName).
+		BatchUpsert(argSets, []string{FieldId}, FieldName).
 		BuildBatch()
 
 	return database.Batch(ctx, s.Connection, query, batchArgs)
@@ -92,15 +93,17 @@ func (s *CharacterRepositoryImpl) Delete(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	inClause := sql.CreateTupleInClause([]string{FieldId}, len(entities), 1)
-	query := sql.BuildDeleteQuery(TableName, []string{inClause})
-
-	values := make([]any, len(entities))
+	ids := make([]any, len(entities))
 	for i, entity := range entities {
-		values[i] = entity.GetId()
+		ids[i] = entity.GetId()
 	}
 
-	return database.Execute(ctx, s.Connection, query, values...)
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereIn(FieldId, ids...).
+		Build()
+
+	return database.Execute(ctx, s.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single character entity

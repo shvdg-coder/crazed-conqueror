@@ -90,7 +90,7 @@ func (qb *QueryBuilder) From(table string) *QueryBuilder {
 }
 
 // Where adds a WHERE condition
-func (qb *QueryBuilder) Where(field string, value any) *QueryBuilder {
+func (qb *QueryBuilder) Where(field string, value ...any) *QueryBuilder {
 	if !qb.hasWhereClause() {
 		qb.query.WriteString(" WHERE ")
 		qb.hasWhere = true
@@ -101,7 +101,11 @@ func (qb *QueryBuilder) Where(field string, value any) *QueryBuilder {
 	qb.query.WriteString(field)
 	qb.query.WriteString(" = $")
 	qb.query.WriteString(strconv.Itoa(qb.paramIndex))
-	qb.args = append(qb.args, value)
+
+	if len(value) > 0 {
+		qb.args = append(qb.args, value[0])
+	}
+
 	qb.paramIndex++
 
 	return qb
