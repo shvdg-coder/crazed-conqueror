@@ -19,18 +19,23 @@ func NewUserRepositoryImpl(connection database.Connection) *UserRepositoryImpl {
 
 // GetByEmail retrieves a user by their email address
 func (s *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*domain.UserEntity, error) {
-	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt}
-	whereClause := sql.CreateDollarClause(1, []string{FieldEmail})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadOne(ctx, query, []any{email}, ScanUserEntity)
+	query, args := sql.NewQuery().
+		Select(FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt).
+		From(TableName).
+		Where(FieldEmail, email).
+		Build()
+	return s.ReadOne(ctx, query, args, ScanUserEntity)
 }
 
 // Authenticate validates user credentials and returns the user if valid
 func (s *UserRepositoryImpl) Authenticate(ctx context.Context, email, password string) (*domain.UserEntity, error) {
-	fields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt}
-	whereClauses := sql.CreateDollarClause(1, []string{FieldEmail, FieldPassword})
-	query := sql.BuildSelectQuery(TableName, fields, whereClauses...)
-	return s.ReadOne(ctx, query, []any{email, password}, ScanUserEntity)
+	query, args := sql.NewQuery().
+		Select(FieldId, FieldEmail, FieldPassword, FieldDisplayName, FieldCreatedAt, FieldUpdatedAt, FieldLastLoginAt).
+		From(TableName).
+		Where(FieldEmail, email).
+		Where(FieldPassword, password).
+		Build()
+	return s.ReadOne(ctx, query, args, ScanUserEntity)
 }
 
 // Create inserts one or more user entities into the database
@@ -56,6 +61,7 @@ func (s *UserRepositoryImpl) Update(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
+	// For batch operations, we still use the old approach since QueryBuilder is designed for single operations
 	fields := []string{FieldEmail, FieldPassword, FieldDisplayName}
 	setClauses := sql.CreateDollarClause(1, fields)
 	whereClauses := sql.CreateDollarClause(4, []string{FieldId})
@@ -75,6 +81,7 @@ func (s *UserRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
+	// For batch operations, we still use the old approach since QueryBuilder is designed for single operations
 	insertFields := []string{FieldId, FieldEmail, FieldPassword, FieldDisplayName}
 	keyFields := []string{FieldId}
 	updateFields := []string{FieldEmail, FieldPassword, FieldDisplayName}
@@ -94,6 +101,7 @@ func (s *UserRepositoryImpl) Delete(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
+	// For DELETE operations, we still use the old approach since QueryBuilder doesn't implement DELETE yet
 	inClause := sql.CreateTupleInClause([]string{FieldId}, len(entities), 1)
 	query := sql.BuildDeleteQuery(TableName, []string{inClause})
 

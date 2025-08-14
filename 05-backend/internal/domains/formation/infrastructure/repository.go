@@ -20,10 +20,12 @@ func NewFormationRepositoryImpl(connection database.Connection) *FormationReposi
 
 // GetById retrieves a formation by its id
 func (s *FormationRepositoryImpl) GetById(ctx context.Context, id string) (*domain.FormationEntity, error) {
-	fields := []string{FieldId, FieldTiles, FieldCreatedAt, FieldUpdatedAt}
-	whereClause := sql.CreateDollarClause(1, []string{FieldId})
-	query := sql.BuildSelectQuery(TableName, fields, whereClause...)
-	return s.ReadOne(ctx, query, []any{id}, ScanFormationEntity)
+	query, args := sql.NewQuery().
+		Select(FieldId, FieldTiles, FieldCreatedAt, FieldUpdatedAt).
+		From(TableName).
+		Where(FieldId, id).
+		Build()
+	return s.ReadOne(ctx, query, args, ScanFormationEntity)
 }
 
 // Create implements Repository.Create
