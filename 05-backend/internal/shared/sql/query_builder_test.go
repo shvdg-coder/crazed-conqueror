@@ -236,6 +236,72 @@ var _ = Describe("QueryBuilder", func() {
 		})
 	})
 
+	Describe("UPSERT queries", func() {
+		Context("simple UPSERT", func() {
+			It("should build basic UPSERT with DO NOTHING", func() {
+				query, args := qb.InsertInto("users").
+					InsertFields("id", "email", "name").
+					Values(1, "test@example.com", "Test User").
+					OnConflict("id").
+					DoNothing().
+					Build()
+
+				Expect(query).To(Equal("INSERT INTO users (id, email, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING"))
+				Expect(args).To(Equal([]any{1, "test@example.com", "Test User"}))
+			})
+
+			It("should build basic UPSERT with DO UPDATE", func() {
+				query, args := qb.InsertInto("users").
+					InsertFields("id", "email", "name").
+					Values(1, "test@example.com", "Test User").
+					OnConflict("id").
+					DoUpdate("email", "name").
+					Build()
+
+				Expect(query).To(Equal("INSERT INTO users (id, email, name) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, name = EXCLUDED.name"))
+				Expect(args).To(Equal([]any{1, "test@example.com", "Test User"}))
+			})
+		})
+
+		Context("batch UPSERT", func() {
+			It("should build batch UPSERT with DO NOTHING", func() {
+				argumentSets := [][]any{
+					{"user1", "char1"},
+					{"user2", "char2"},
+				}
+
+				query, batchArgs := qb.InsertInto("user_characters").
+					InsertFields("user_id", "character_id").
+					BatchUpsert(argumentSets, []string{"user_id", "character_id"}).
+					BuildBatch()
+
+				Expect(query).To(Equal("INSERT INTO user_characters (user_id, character_id) VALUES ($1, $2) ON CONFLICT (user_id, character_id) DO NOTHING"))
+				Expect(batchArgs).To(Equal([][]any{
+					{"user1", "char1"},
+					{"user2", "char2"},
+				}))
+			})
+
+			It("should build batch UPSERT with DO UPDATE", func() {
+				argumentSets := [][]any{
+					{"user1", "char1", 10},
+					{"user2", "char2", 15},
+				}
+
+				query, batchArgs := qb.InsertInto("user_characters").
+					InsertFields("user_id", "character_id", "level").
+					BatchUpsert(argumentSets, []string{"user_id", "character_id"}, "level").
+					BuildBatch()
+
+				Expect(query).To(Equal("INSERT INTO user_characters (user_id, character_id, level) VALUES ($1, $2, $3) ON CONFLICT (user_id, character_id) DO UPDATE SET level = EXCLUDED.level"))
+				Expect(batchArgs).To(Equal([][]any{
+					{"user1", "char1", 10},
+					{"user2", "char2", 15},
+				}))
+			})
+		})
+	})
+
 	Describe("DELETE queries", func() {
 		Context("simple DELETE", func() {
 			It("should build basic DELETE query", func() {

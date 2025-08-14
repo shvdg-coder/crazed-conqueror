@@ -277,6 +277,53 @@ func (qb *QueryBuilder) BatchSets(argumentSets [][]any, setFields ...string) *Qu
 	return qb
 }
 
+// UPSERT Methods
+
+// OnConflict adds an ON CONFLICT clause with key fields
+func (qb *QueryBuilder) OnConflict(keyFields ...string) *QueryBuilder {
+	qb.query.WriteString(" ON CONFLICT (")
+	qb.query.WriteString(strings.Join(keyFields, ", "))
+	qb.query.WriteString(")")
+	return qb
+}
+
+// DoNothing adds DO NOTHING to the ON CONFLICT clause
+func (qb *QueryBuilder) DoNothing() *QueryBuilder {
+	qb.query.WriteString(" DO NOTHING")
+	return qb
+}
+
+// DoUpdate adds DO UPDATE SET clause with specified fields
+func (qb *QueryBuilder) DoUpdate(updateFields ...string) *QueryBuilder {
+	if len(updateFields) == 0 {
+		return qb.DoNothing()
+	}
+
+	qb.query.WriteString(" DO UPDATE SET ")
+
+	setClauses := make([]string, len(updateFields))
+	for i, field := range updateFields {
+		setClauses[i] = field + " = EXCLUDED." + field
+	}
+
+	qb.query.WriteString(strings.Join(setClauses, ", "))
+	return qb
+}
+
+// BatchUpsert is a convenience method that combines BatchValues with ON CONFLICT
+func (qb *QueryBuilder) BatchUpsert(argumentSets [][]any, keyFields []string, updateFields ...string) *QueryBuilder {
+	qb.BatchValues(argumentSets)
+	qb.OnConflict(keyFields...)
+
+	if len(updateFields) == 0 {
+		qb.DoNothing()
+	} else {
+		qb.DoUpdate(updateFields...)
+	}
+
+	return qb
+}
+
 // DELETE Methods
 
 // DeleteFrom adds a DELETE FROM clause

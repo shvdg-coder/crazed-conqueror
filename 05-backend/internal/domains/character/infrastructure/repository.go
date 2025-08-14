@@ -33,7 +33,6 @@ func (s *CharacterRepositoryImpl) Create(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	fields := []string{FieldId, FieldName}
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetName()}
@@ -41,7 +40,7 @@ func (s *CharacterRepositoryImpl) Create(ctx context.Context, entities ...*domai
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
-		InsertFields(fields...).
+		InsertFields(FieldId, FieldName).
 		BatchValues(argumentSets).
 		BuildBatch()
 
@@ -73,17 +72,18 @@ func (s *CharacterRepositoryImpl) Upsert(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	insertFields := []string{FieldId, FieldName}
-	keyFields := []string{FieldId}
-	updateFields := []string{FieldName}
-	query := sql.BuildUpsertQuery(TableName, insertFields, keyFields, updateFields)
-
 	argumentSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		argumentSets[i] = []any{entity.GetId(), entity.GetName()}
 	}
 
-	return database.Batch(ctx, s.Connection, query, argumentSets)
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldId, FieldName).
+		BatchUpsert(argumentSets, []string{FieldId}, FieldName).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Delete removes one or more character entities from the database
