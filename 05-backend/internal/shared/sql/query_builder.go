@@ -56,6 +56,12 @@ func (qb *QueryBuilder) BuildBatch() (string, [][]any) {
 	return qb.String(), qb.batchArgs
 }
 
+// Count adds a SELECT COUNT(*) clause
+func (qb *QueryBuilder) Count() *QueryBuilder {
+	qb.query.WriteString("SELECT COUNT(*)")
+	return qb
+}
+
 // SELECT Methods
 
 // Select adds a SELECT clause with field names

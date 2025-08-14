@@ -12,6 +12,30 @@ var _ = Describe("QueryBuilder", func() {
 		qb = NewQuery()
 	})
 
+	Describe("COUNT queries", func() {
+		Context("basic COUNT", func() {
+			It("should build simple COUNT query", func() {
+				query, args := qb.Count().
+					From("users").
+					Build()
+
+				Expect(query).To(Equal("SELECT COUNT(*) FROM users"))
+				Expect(args).To(BeEmpty())
+			})
+
+			It("should build COUNT with multiple WHERE conditions", func() {
+				query, args := qb.Count().
+					From("users").
+					Where("active", true).
+					Where("role", "admin").
+					Build()
+
+				Expect(query).To(Equal("SELECT COUNT(*) FROM users WHERE active = $1 AND role = $2"))
+				Expect(args).To(Equal([]any{true, "admin"}))
+			})
+		})
+	})
+
 	Describe("SELECT queries", func() {
 		Context("simple SELECT", func() {
 			It("should build basic SELECT query", func() {

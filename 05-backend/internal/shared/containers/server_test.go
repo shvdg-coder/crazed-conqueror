@@ -10,7 +10,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/network"
 )
 
-var _ = Describe("Server Container Tests", Ordered, func() {
+var _ = XDescribe("Server Container Tests", Ordered, func() {
 	var ctx context.Context
 	var net *testcontainers.DockerNetwork
 

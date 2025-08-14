@@ -23,18 +23,23 @@ func Execute(ctx context.Context, connection Connection, script string, argument
 	})
 }
 
-// Count executes a script with optional arguments and returns the number of rows affected
+// Count executes a count query with optional arguments and returns the number of rows
 func Count(ctx context.Context, connection Connection, table string, fields []string, values []any) (int, error) {
-	if ctx == nil || len(fields) == 0 || len(values) == 0 {
+	if ctx == nil || table == "" {
 		return 0, fmt.Errorf("invalid arguments to count rows")
 	}
 
 	return WithExecutorResult(ctx, connection, func(executor Executor) (int, error) {
 		var count int
-		whereClauses := sql.CreateDollarClause(1, fields)
-		query := sql.BuildCountQuery(table, whereClauses)
 
-		err := executor.QueryRow(ctx, query, values...).Scan(&count)
+		qb := sql.NewQuery().Count().From(table)
+		for i, field := range fields {
+			qb.Where(field, values[i])
+		}
+
+		query, args := qb.Build()
+
+		err := executor.QueryRow(ctx, query, args...).Scan(&count)
 		if err != nil {
 			return count, fmt.Errorf("failed to count rows: %w", err)
 		}
