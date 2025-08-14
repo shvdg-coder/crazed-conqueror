@@ -124,6 +124,40 @@ func (qb *QueryBuilder) WhereIn(field string, values ...any) *QueryBuilder {
 	return qb
 }
 
+// WhereTupleIn adds a WHERE tuple IN condition for composite keys
+func (qb *QueryBuilder) WhereTupleIn(tuples [][]any, fields ...string) *QueryBuilder {
+	if len(tuples) == 0 || len(fields) == 0 {
+		return qb
+	}
+
+	if !qb.hasWhereClause() {
+		qb.query.WriteString(" WHERE ")
+		qb.hasWhere = true
+	} else {
+		qb.query.WriteString(" AND ")
+	}
+
+	qb.query.WriteString("(")
+	qb.query.WriteString(strings.Join(fields, ", "))
+	qb.query.WriteString(") IN (")
+
+	tuplePlaceholders := make([]string, len(tuples))
+	for i, tuple := range tuples {
+		valuePlaceholders := make([]string, len(tuple))
+		for j, value := range tuple {
+			valuePlaceholders[j] = "$" + strconv.Itoa(qb.paramIndex)
+			qb.args = append(qb.args, value)
+			qb.paramIndex++
+		}
+		tuplePlaceholders[i] = "(" + strings.Join(valuePlaceholders, ", ") + ")"
+	}
+
+	qb.query.WriteString(strings.Join(tuplePlaceholders, ", "))
+	qb.query.WriteString(")")
+
+	return qb
+}
+
 // INSERT Methods
 
 // InsertInto adds an INSERT INTO clause
@@ -133,20 +167,18 @@ func (qb *QueryBuilder) InsertInto(table string) *QueryBuilder {
 	return qb
 }
 
-// ValueFields sets the field names for INSERT operations
-func (qb *QueryBuilder) ValueFields(fields ...string) *QueryBuilder {
+// InsertFields sets the field names for INSERT operations
+func (qb *QueryBuilder) InsertFields(fields ...string) *QueryBuilder {
 	qb.insertFields = fields
 	return qb
 }
 
 // Values adds a VALUES clause for INSERT using previously set fields
 func (qb *QueryBuilder) Values(values ...any) *QueryBuilder {
-	// Write the fields part
 	qb.query.WriteString(" (")
 	qb.query.WriteString(strings.Join(qb.insertFields, ", "))
 	qb.query.WriteString(") VALUES (")
 
-	// Write the values part
 	placeholders := make([]string, len(values))
 	for i, value := range values {
 		placeholders[i] = "$" + strconv.Itoa(qb.paramIndex)
@@ -184,6 +216,15 @@ func (qb *QueryBuilder) Set(field string, value any) *QueryBuilder {
 	qb.args = append(qb.args, value)
 	qb.paramIndex++
 
+	return qb
+}
+
+// DELETE Methods
+
+// DeleteFrom adds a DELETE FROM clause
+func (qb *QueryBuilder) DeleteFrom(table string) *QueryBuilder {
+	qb.query.WriteString("DELETE FROM ")
+	qb.query.WriteString(table)
 	return qb
 }
 

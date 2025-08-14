@@ -30,8 +30,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("SELECT id, name FROM users WHERE email = $1"))
-				Expect(args).To(HaveLen(1))
-				Expect(args[0]).To(Equal("test@example.com"))
+				Expect(args).To(Equal([]any{"test@example.com"}))
 			})
 
 			It("should build SELECT with multiple WHERE conditions", func() {
@@ -42,9 +41,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("SELECT id, name FROM users WHERE email = $1 AND active = $2"))
-				Expect(args).To(HaveLen(2))
-				Expect(args[0]).To(Equal("test@example.com"))
-				Expect(args[1]).To(Equal(true))
+				Expect(args).To(Equal([]any{"test@example.com", true}))
 			})
 
 			It("should build SELECT with WHERE IN condition", func() {
@@ -54,10 +51,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("SELECT id, name FROM users WHERE id IN ($1, $2, $3)"))
-				Expect(args).To(HaveLen(3))
-				Expect(args[0]).To(Equal(1))
-				Expect(args[1]).To(Equal(2))
-				Expect(args[2]).To(Equal(3))
+				Expect(args).To(Equal([]any{1, 2, 3}))
 			})
 
 			It("should build SELECT with WHERE IN and additional WHERE", func() {
@@ -68,10 +62,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("SELECT id, name FROM users WHERE status IN ($1, $2) AND verified = $3"))
-				Expect(args).To(HaveLen(3))
-				Expect(args[0]).To(Equal("active"))
-				Expect(args[1]).To(Equal("pending"))
-				Expect(args[2]).To(Equal(true))
+				Expect(args).To(Equal([]any{"active", "pending", true}))
 			})
 
 			It("should handle empty WHERE IN gracefully", func() {
@@ -111,8 +102,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("SELECT * FROM users WHERE id = $1 RETURNING id, updated_at"))
-				Expect(args).To(HaveLen(1))
-				Expect(args[0]).To(Equal(123))
+				Expect(args).To(Equal([]any{123}))
 			})
 		})
 	})
@@ -121,28 +111,23 @@ var _ = Describe("QueryBuilder", func() {
 		Context("simple INSERT", func() {
 			It("should build basic INSERT query", func() {
 				query, args := qb.InsertInto("users").
-					ValueFields("id", "email", "name").
+					InsertFields("id", "email", "name").
 					Values(1, "test@example.com", "Test User").
 					Build()
 
 				Expect(query).To(Equal("INSERT INTO users (id, email, name) VALUES ($1, $2, $3)"))
-				Expect(args).To(HaveLen(3))
-				Expect(args[0]).To(Equal(1))
-				Expect(args[1]).To(Equal("test@example.com"))
-				Expect(args[2]).To(Equal("Test User"))
+				Expect(args).To(Equal([]any{1, "test@example.com", "Test User"}))
 			})
 
 			It("should build INSERT with RETURNING", func() {
 				query, args := qb.InsertInto("users").
-					ValueFields("email", "name").
+					InsertFields("email", "name").
 					Values("test@example.com", "Test User").
 					Returning("id", "created_at").
 					Build()
 
 				Expect(query).To(Equal("INSERT INTO users (email, name) VALUES ($1, $2) RETURNING id, created_at"))
-				Expect(args).To(HaveLen(2))
-				Expect(args[0]).To(Equal("test@example.com"))
-				Expect(args[1]).To(Equal("Test User"))
+				Expect(args).To(Equal([]any{"test@example.com", "Test User"}))
 			})
 		})
 
@@ -158,10 +143,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("UPDATE users SET email = $1, name = $2 WHERE id = $3"))
-				Expect(args).To(HaveLen(3))
-				Expect(args[0]).To(Equal("new@example.com"))
-				Expect(args[1]).To(Equal("New Name"))
-				Expect(args[2]).To(Equal(1))
+				Expect(args).To(Equal([]any{"new@example.com", "New Name", 1}))
 			})
 
 			It("should build UPDATE with RETURNING", func() {
@@ -172,9 +154,7 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("UPDATE users SET email = $1 WHERE id = $2 RETURNING id, updated_at"))
-				Expect(args).To(HaveLen(2))
-				Expect(args[0]).To(Equal("new@example.com"))
-				Expect(args[1]).To(Equal(1))
+				Expect(args).To(Equal([]any{"new@example.com", 1}))
 			})
 
 			It("should build UPDATE with multiple WHERE conditions", func() {
@@ -185,10 +165,80 @@ var _ = Describe("QueryBuilder", func() {
 					Build()
 
 				Expect(query).To(Equal("UPDATE users SET active = $1 WHERE email = $2 AND verified = $3"))
-				Expect(args).To(HaveLen(3))
-				Expect(args[0]).To(Equal(false))
-				Expect(args[1]).To(Equal("test@example.com"))
-				Expect(args[2]).To(Equal(true))
+				Expect(args).To(Equal([]any{false, "test@example.com", true}))
+			})
+		})
+	})
+
+	Describe("DELETE queries", func() {
+		Context("simple DELETE", func() {
+			It("should build basic DELETE query", func() {
+				query, args := qb.DeleteFrom("users").
+					Where("id", 123).
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM users WHERE id = $1"))
+				Expect(args).To(Equal([]any{123}))
+			})
+
+			It("should build DELETE with multiple WHERE conditions", func() {
+				query, args := qb.DeleteFrom("users").
+					Where("email", "test@example.com").
+					Where("active", false).
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM users WHERE email = $1 AND active = $2"))
+				Expect(args).To(Equal([]any{"test@example.com", false}))
+			})
+
+			It("should build DELETE with WHERE IN", func() {
+				query, args := qb.DeleteFrom("users").
+					WhereIn("id", 1, 2, 3).
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM users WHERE id IN ($1, $2, $3)"))
+				Expect(args).To(Equal([]any{1, 2, 3}))
+			})
+
+			It("should build DELETE with RETURNING", func() {
+				query, args := qb.DeleteFrom("users").
+					Where("id", 123).
+					Returning("id", "email").
+					Build()
+
+				Expect(query).To(Equal("DELETE FROM users WHERE id = $1 RETURNING id, email"))
+				Expect(args).To(Equal([]any{123}))
+			})
+		})
+	})
+
+	Describe("WhereTupleIn queries", func() {
+		Context("tuple IN conditions", func() {
+			It("should handle single tuple", func() {
+				tuples := [][]any{
+					{"user1", "char1"},
+				}
+				query, args := qb.Select("*").
+					From("user_characters").
+					WhereTupleIn(tuples, "user_id", "character_id").
+					Build()
+
+				Expect(query).To(Equal("SELECT * FROM user_characters WHERE (user_id, character_id) IN (($1, $2))"))
+				Expect(args).To(Equal([]any{"user1", "char1"}))
+			})
+
+			It("should work with three-field tuples", func() {
+				tuples := [][]any{
+					{"user1", "char1", "slot1"},
+					{"user2", "char2", "slot2"},
+				}
+				query, args := qb.Select("*").
+					From("user_character_slots").
+					WhereTupleIn(tuples, "user_id", "character_id", "slot_id").
+					Build()
+
+				Expect(query).To(Equal("SELECT * FROM user_character_slots WHERE (user_id, character_id, slot_id) IN (($1, $2, $3), ($4, $5, $6))"))
+				Expect(args).To(Equal([]any{"user1", "char1", "slot1", "user2", "char2", "slot2"}))
 			})
 		})
 	})
@@ -203,11 +253,7 @@ var _ = Describe("QueryBuilder", func() {
 				Build()
 
 			Expect(query).To(Equal("SELECT id, name FROM users WHERE status = $1 AND verified = $2 AND role IN ($3, $4)"))
-			Expect(args).To(HaveLen(4))
-			Expect(args[0]).To(Equal("active"))
-			Expect(args[1]).To(Equal(true))
-			Expect(args[2]).To(Equal("admin"))
-			Expect(args[3]).To(Equal("user"))
+			Expect(args).To(Equal([]any{"active", true, "admin", "user"}))
 		})
 
 		It("should maintain parameter indexing in UPDATE queries", func() {
@@ -219,11 +265,7 @@ var _ = Describe("QueryBuilder", func() {
 				Build()
 
 			Expect(query).To(Equal("UPDATE users SET name = $1, email = $2 WHERE id = $3 AND active = $4"))
-			Expect(args).To(HaveLen(4))
-			Expect(args[0]).To(Equal("Updated Name"))
-			Expect(args[1]).To(Equal("new@example.com"))
-			Expect(args[2]).To(Equal(123))
-			Expect(args[3]).To(Equal(true))
+			Expect(args).To(Equal([]any{"Updated Name", "new@example.com", 123, true}))
 		})
 	})
 })
