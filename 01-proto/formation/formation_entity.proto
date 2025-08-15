@@ -18,11 +18,11 @@ message FormationEntity {
 
 // FormationRow represents a single row in the formation
 message FormationRowEntity {
-  repeated FormationTileEntity tiles = 1;
+  repeated FormationColumnEntity columns = 1;
 }
 
-// FormationTile represents a single tile in the formation grid
-message FormationTileEntity {
+// FormationColumnEntity represents a single tile in the formation grid
+message FormationColumnEntity {
   int32 position_x = 1;
   int32 position_y = 2;
   string unit_id = 3;

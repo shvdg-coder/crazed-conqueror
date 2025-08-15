@@ -2,7 +2,9 @@ package infrastructure
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"shvdg/crazed-conquerer/internal/domains/formation/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
 	"shvdg/crazed-conquerer/internal/shared/sql"
@@ -21,7 +23,7 @@ func NewFormationRepositoryImpl(connection database.Connection) *FormationReposi
 // GetById retrieves a formation by its id
 func (s *FormationRepositoryImpl) GetById(ctx context.Context, id string) (*domain.FormationEntity, error) {
 	query, args := sql.NewQuery().
-		Select(FieldId, FieldTiles, FieldCreatedAt, FieldUpdatedAt).
+		Select(FieldId, FieldRows, FieldCreatedAt, FieldUpdatedAt).
 		From(TableName).
 		Where(FieldId, id).
 		Build()
@@ -30,7 +32,27 @@ func (s *FormationRepositoryImpl) GetById(ctx context.Context, id string) (*doma
 
 // Create implements Repository.Create
 func (s *FormationRepositoryImpl) Create(ctx context.Context, entities ...*domain.FormationEntity) error {
-	return errors.New("operation not supported")
+	if len(entities) == 0 {
+		return nil
+	}
+
+	argumentSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		rows, err := json.Marshal(entity.GetRows())
+		if err != nil {
+			return fmt.Errorf("failed to marshal formation rows: %w", err)
+		}
+
+		argumentSets[i] = []any{entity.GetId(), json.RawMessage(rows)}
+	}
+
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldId, FieldRows).
+		BatchValues(argumentSets).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Update implements Repository.Update

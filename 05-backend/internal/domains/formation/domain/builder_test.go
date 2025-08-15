@@ -39,13 +39,13 @@ var _ = Describe("FormationEntity Builder Tests", Ordered, func() {
 		It("should parse valid formation rows JSON", func() {
 			validJSON := []byte(`[
 				{
-					"tiles": [
+					"columns": [
 						{"position_x": 0, "position_y": 0, "unit_id": "unit_1"},
 						{"position_x": 1, "position_y": 0, "unit_id": "unit_2"}
 					]
 				},
 				{
-					"tiles": [
+					"columns": [
 						{"position_x": 0, "position_y": 1, "unit_id": "unit_3"}
 					]
 				}
@@ -56,19 +56,19 @@ var _ = Describe("FormationEntity Builder Tests", Ordered, func() {
 			Expect(result.Rows).To(HaveLen(2))
 
 			firstRow := result.Rows[0]
-			Expect(firstRow.Tiles).To(HaveLen(2))
-			Expect(firstRow.Tiles[0].PositionX).To(Equal(int32(0)))
-			Expect(firstRow.Tiles[0].PositionY).To(Equal(int32(0)))
-			Expect(firstRow.Tiles[0].UnitId).To(Equal("unit_1"))
-			Expect(firstRow.Tiles[1].PositionX).To(Equal(int32(1)))
-			Expect(firstRow.Tiles[1].PositionY).To(Equal(int32(0)))
-			Expect(firstRow.Tiles[1].UnitId).To(Equal("unit_2"))
+			Expect(firstRow.Columns).To(HaveLen(2))
+			Expect(firstRow.Columns[0].PositionX).To(Equal(int32(0)))
+			Expect(firstRow.Columns[0].PositionY).To(Equal(int32(0)))
+			Expect(firstRow.Columns[0].UnitId).To(Equal("unit_1"))
+			Expect(firstRow.Columns[1].PositionX).To(Equal(int32(1)))
+			Expect(firstRow.Columns[1].PositionY).To(Equal(int32(0)))
+			Expect(firstRow.Columns[1].UnitId).To(Equal("unit_2"))
 
 			secondRow := result.Rows[1]
-			Expect(secondRow.Tiles).To(HaveLen(1))
-			Expect(secondRow.Tiles[0].PositionX).To(Equal(int32(0)))
-			Expect(secondRow.Tiles[0].PositionY).To(Equal(int32(1)))
-			Expect(secondRow.Tiles[0].UnitId).To(Equal("unit_3"))
+			Expect(secondRow.Columns).To(HaveLen(1))
+			Expect(secondRow.Columns[0].PositionX).To(Equal(int32(0)))
+			Expect(secondRow.Columns[0].PositionY).To(Equal(int32(1)))
+			Expect(secondRow.Columns[0].UnitId).To(Equal("unit_3"))
 		})
 	})
 })

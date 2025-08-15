@@ -5,7 +5,7 @@ const (
 	TableName = "formations"
 
 	FieldId        = "id"
-	FieldTiles     = "tiles"
+	FieldRows      = "rows"
 	FieldCreatedAt = "created_at"
 	FieldUpdatedAt = "updated_at"
 )
@@ -15,7 +15,7 @@ const (
 	CreateTableQuery = `
 		CREATE TABLE IF NOT EXISTS ` + TableName + ` (
 			` + FieldId + ` VARCHAR(255) PRIMARY KEY,
-			` + FieldTiles + ` JSONB NOT NULL DEFAULT '[]'::jsonb,
+			` + FieldRows + ` JSONB NOT NULL DEFAULT '[]'::jsonb,
 			` + FieldCreatedAt + ` TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 			` + FieldUpdatedAt + ` TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		);
