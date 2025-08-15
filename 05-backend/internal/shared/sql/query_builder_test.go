@@ -89,23 +89,6 @@ var _ = Describe("QueryBuilder", func() {
 				Expect(args).To(Equal([]any{"active", "pending", true}))
 			})
 		})
-
-		Context("SELECT with QueryFields", func() {
-			It("should build SELECT with QueryField objects", func() {
-				fields := []QueryField{
-					NewQueryField("id"),
-					NewQueryField("created_at", "::timestamptz"),
-					NewQueryField("data", "::jsonb"),
-				}
-
-				query, args := qb.SelectFields(fields...).
-					From("users").
-					Build()
-
-				Expect(query).To(Equal("SELECT id, created_at::timestamptz, data::jsonb FROM users"))
-				Expect(args).To(BeEmpty())
-			})
-		})
 	})
 
 	Describe("INSERT queries", func() {

@@ -11,7 +11,7 @@ type QueryBuilder struct {
 	args         []any
 	batchArgs    [][]any
 	paramIndex   int
-	fields       []QueryField
+	fields       []string
 	hasWhere     bool
 	hasSet       bool
 	insertFields []string
@@ -22,7 +22,7 @@ func NewQuery() *QueryBuilder {
 	return &QueryBuilder{
 		args:       make([]any, 0),
 		paramIndex: 1,
-		fields:     make([]QueryField, 0),
+		fields:     make([]string, 0),
 	}
 }
 
@@ -68,17 +68,6 @@ func (qb *QueryBuilder) Count() *QueryBuilder {
 func (qb *QueryBuilder) Select(fields ...string) *QueryBuilder {
 	qb.query.WriteString("SELECT ")
 	qb.query.WriteString(strings.Join(fields, ", "))
-	return qb
-}
-
-// SelectFields adds a SELECT clause with QueryField objects
-func (qb *QueryBuilder) SelectFields(fields ...QueryField) *QueryBuilder {
-	qb.query.WriteString("SELECT ")
-	fieldStrings := make([]string, len(fields))
-	for i, field := range fields {
-		fieldStrings[i] = field.String()
-	}
-	qb.query.WriteString(strings.Join(fieldStrings, ", "))
 	return qb
 }
 
