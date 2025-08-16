@@ -16,7 +16,7 @@ func TestInfrastructure(t *testing.T) {
 
 // Executes the first block before and the second block after all the tests are run.
 var _ = SynchronizedBeforeSuite(func() []byte {
-	return shared.InitializeGlobalSuite()
+	return shared.InitializeTestSuite()
 }, func(data []byte) {
 	if err := shared.SetupLocalSuite(data); err != nil {
 		Fail(fmt.Sprintf("Failed to setup local test suite: %v", err))
@@ -27,5 +27,5 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 var _ = SynchronizedAfterSuite(func() {
 	// N.A
 }, func() {
-	shared.CleanupGlobalSuite()
+	shared.CleanupSharedSuite()
 })
