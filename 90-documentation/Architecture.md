@@ -40,12 +40,60 @@ Each `<domain_name>` directory contains a strict three-layer structure:
 *   **Key Directories:**
     *   `internal/shared/events/`: Defines the **contracts**. This is a shared, technology-agnostic package containing the `EventBus` and `Event` interfaces that every part of the application can safely depend on.
 
-#### 5. Multi-Domain Workflows: Business Flows
+#### 5. Use Case Example
 
-*   **Purpose:** To orchestrate complex business processes that span multiple domains. While an `application` service handles tasks within one domain, a "flow" coordinates multiple `application` services to achieve a larger goal.
+This example outlines the entire lifecycle of a single business process: A customer successfully orders a product, which
+in turn updates the inventory stock level. This demonstrates both a direct Query for immediate data and an asynchronous
+Event/Subscribe model for later reactions.
 
-*   **Key Directory:**
-    *   `internal/flows/`: This directory contains the high-level orchestrators. A flow service here might take the application services from the `user`, `map`, and `character` domains as dependencies to manage a process like "Conquer a Territory". It initiates the action in one domain, and then the system relies on the event bus for subsequent reactions from other domains, which the flow can monitor to complete the process.
+1. **The Request (Entry Point)**: An HTTP API handler receives a request to order 2 units of "Product X". It creates a
+   PlaceOrderCommand object with the product ID and quantity.
+
+2. **Orchestration (ordering/application)**: The handler calls the PlaceOrder method on the Ordering Service. This
+   service
+   is now in charge of the entire order placement process.
+
+3. **The Synchronous Query**: To proceed, the Ordering Service must know if "Product X" is in stock. It makes a direct,
+   synchronous call to the FindByID method on the Inventory Repository interface. It needs this data now, so an event is
+   not appropriate.
+
+4. **The Decision**: The repository returns the Product data object. The Ordering Service inspects it and confirms that
+   the
+   stock level is sufficient.
+
+5. **Domain Logic (ordering/domain)**: The service now calls its own Order aggregate to create the new order, passing
+   only
+   primitive data (product ID, quantity, current price). The Order aggregate enforces its own business rules and, as
+   part
+   of its creation, records an OrderPlacedEvent in its internal list of events.
+
+6. **The Pivot - Commit and Publish (ordering/infrastructure)**:
+    * The Ordering Service tells its Order Repository to save the new Order.
+    * The repository saves the order to the database. Immediately after the transaction commits successfully, it
+      retrieves
+      the OrderPlacedEvent from the aggregate and publishes it to the Event Bus.
+    * The Ordering domain's job is now complete. It has fulfilled its responsibility.
+
+7. **The Asynchronous Subscription (inventory/application)**:
+    * Elsewhere, an Inventory Event Listener is subscribed to the Event Bus. It hears the OrderPlacedEvent and
+      recognizes
+      it as relevant.
+    * The listener translates the event into a new, internal DecreaseStockCommand. It then calls the DecreaseStock
+      method
+      on its own Inventory Service.
+
+8. **The Reaction (inventory/domain)**:
+    * The Inventory Service receives the command. It uses its Inventory Repository to load the Product aggregate for
+      "Product X".
+    * It then calls the DecreaseStock(2) method on the Product aggregate itself. The aggregate updates its internal
+      state,
+      lowering its stock count.
+
+9. **The Final Commit (inventory/infrastructure)**: The Inventory Service tells its repository to save the updated
+   Product.
+   The new, lower stock count is persisted to the database. The entire business process is now complete, and the system
+   is
+   in a new, consistent state.
 
 #### 6. How to Extend This Architecture
 
