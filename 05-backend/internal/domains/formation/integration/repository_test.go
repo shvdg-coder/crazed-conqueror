@@ -171,4 +171,28 @@ var _ = Describe("Formation Repository", Ordered, func() {
 			Expect(secondColumn.GetUnitId()).To(Equal("unit_2"))
 		})
 	})
+
+	Context("When one formation is deleted", func() {
+		var formation *domain.FormationEntity
+
+		BeforeAll(func() {
+			formation = domain.NewFormationEntity().WithDefaults().
+				WithRowsFromJson(smallRowsJson).
+				Build()
+
+			err := formationRepo.Create(ctx, formation)
+			Expect(err).ToNot(HaveOccurred(), "failed to create formation")
+		})
+
+		It("should successfully remove the formation from the database", func() {
+			err := formationRepo.Delete(ctx, formation)
+			Expect(err).ToNot(HaveOccurred(), "failed to delete formation")
+
+			query, args := sql.NewQuery().Count().From(infra.TableName).Where(infra.FieldId, formation.GetId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
+
+			Expect(err).ToNot(HaveOccurred(), "failed to count formations")
+			Expect(count).To(BeZero(), "expected formation to be deleted")
+		})
+	})
 })
