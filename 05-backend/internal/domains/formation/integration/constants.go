@@ -1,7 +1,7 @@
 package integration
 
-// rowsJson is a sample JSON for rows.
-var rowsJson = []byte(`[
+// simpleRowsJson is a sample JSON for rows.
+var simpleRowsJson = []byte(`[
 				{
 					"columns": [
 						{"position_x": 0, "position_y": 0, "unit_id": "unit_1"},

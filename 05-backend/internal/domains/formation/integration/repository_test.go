@@ -41,9 +41,8 @@ var _ = Describe("Formation Repository", Ordered, func() {
 		var formation *domain.FormationEntity
 
 		BeforeAll(func() {
-			formation = domain.NewFormationEntity().
-				WithDefaults().
-				WithRowsFromJson(rowsJson).
+			formation = domain.NewFormationEntity().WithDefaults().
+				WithRowsFromJson(simpleRowsJson).
 				Build()
 		})
 
@@ -56,6 +55,31 @@ var _ = Describe("Formation Repository", Ordered, func() {
 
 			Expect(err).ToNot(HaveOccurred(), "failed to count formations")
 			Expect(count).To(Equal(1), "expected 1 formation to be created")
+		})
+	})
+
+	Context("When retrieving formation by ID", func() {
+		BeforeAll(func() {
+			formation := domain.NewFormationEntity().WithDefaults().
+				WithId("find-me-123").
+				WithRowsFromJson(simpleRowsJson).
+				Build()
+			err := formationRepo.Create(ctx, formation)
+			Expect(err).ToNot(HaveOccurred(), "failed to create formation")
+		})
+
+		It("should return the correct formation", func() {
+			foundFormation, err := formationRepo.GetById(ctx, "find-me-123")
+			Expect(err).ToNot(HaveOccurred(), "failed to get formation by ID")
+			Expect(foundFormation).ToNot(BeNil(), "expected to find a formation")
+			Expect(foundFormation.GetId()).To(Equal("find-me-123"))
+			Expect(foundFormation.GetRows()).To(HaveLen(1), "expected 1 row")
+			Expect(foundFormation.GetRows()[0].GetColumns()).To(HaveLen(2), "expected 2 columns")
+
+			firstColumn := foundFormation.GetRows()[0].GetColumns()[0]
+			Expect(firstColumn.GetPositionX()).To(Equal(int32(0)))
+			Expect(firstColumn.GetPositionY()).To(Equal(int32(0)))
+			Expect(firstColumn.GetUnitId()).To(Equal("unit_1"))
 		})
 	})
 })

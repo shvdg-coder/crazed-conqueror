@@ -11,16 +11,16 @@ import (
 // ScanFormationEntity scans database row data into a FormationEntity
 func ScanFormationEntity(scanner database.RowScanner) (*domain.FormationEntity, error) {
 	var id string
-	var rowsJSON []byte
+	var rowsJson []byte
 	var createdAt, updatedAt pgtype.Timestamp
 
-	if err := scanner.Scan(&id, &rowsJSON, &createdAt, &updatedAt); err != nil {
+	if err := scanner.Scan(&id, &rowsJson, &createdAt, &updatedAt); err != nil {
 		return nil, fmt.Errorf("failed to scan formation entity: %w", err)
 	}
 
 	builder := domain.NewFormationEntity().
 		WithId(id).
-		WithRowsFromJson(rowsJSON)
+		WithRowsFromJson(rowsJson)
 
 	if createdAt.Valid {
 		builder = builder.WithCreatedAt(createdAt.Time)
