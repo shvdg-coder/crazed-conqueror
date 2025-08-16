@@ -7,21 +7,21 @@ import (
 
 // Battlefield represents a battlefield on which units engage in combat.
 type Battlefield struct {
-	Tiles [][]BattlefieldTile
+	Rows []BattlefieldRow
 }
 
-// GetByCoordinates retrieves a tile by row and column
-func (b *Battlefield) GetByCoordinates(coordinates *types.Coordinates) (*BattlefieldTile, error) {
+// GetByCoordinates retrieves a column-by-row and column coordinates
+func (b *Battlefield) GetByCoordinates(coordinates *types.Coordinates) (*BattlefieldColumn, error) {
 	if coordinates == nil {
 		return nil, fmt.Errorf("coordinates cannot be nil")
 	}
 
-	if coordinates.GetX() >= int32(len(b.Tiles)) || coordinates.GetX() < 0 {
+	if coordinates.GetX() >= int32(len(b.Rows)) || coordinates.GetX() < 0 {
 		return nil, fmt.Errorf("row %d out of bounds", coordinates.GetX())
 	}
-	if coordinates.GetY() >= int32(len(b.Tiles[coordinates.GetX()])) || coordinates.GetY() < 0 {
+	if coordinates.GetY() >= int32(len(b.Rows[coordinates.GetX()].Columns)) || coordinates.GetY() < 0 {
 		return nil, fmt.Errorf("column %d out of bounds", coordinates.GetY())
 	}
 
-	return &b.Tiles[coordinates.GetX()][coordinates.GetY()], nil
+	return &b.Rows[coordinates.GetX()].Columns[coordinates.GetY()], nil
 }
