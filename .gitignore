@@ -1,11 +1,24 @@
+# IDE
 .idea
+
+# Binary files
 *.bin
 *.crt
+
+# Proto
+*.pb.go
+
+# Temporary directories
 */temp
 */tmp
 *tmp
 .run
+
+# Environment files
 .env*
 !.env.example
+
+# Test files
 *.test
-*.pb.go
+ginkgo-test-cover.profile
+ginkgo-test-report.json

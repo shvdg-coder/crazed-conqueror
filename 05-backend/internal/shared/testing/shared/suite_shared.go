@@ -22,7 +22,7 @@ var (
 // GetSharedSuite returns the shared test suite instance with all schemas, creating it if necessary
 func GetSharedSuite() *testing.Suite {
 	initOnce.Do(func() {
-		log.Println("Initializing global test suite...")
+		log.Println("Initializing shared test suite...")
 		sharedSuite = testing.NewTestSuite()
 		sharedSuite.AddSchema(userinfra.NewUserSchema(sharedSuite.Database))
 		sharedSuite.AddSchema(characterinfra.NewCharacterSchema(sharedSuite.Database))
