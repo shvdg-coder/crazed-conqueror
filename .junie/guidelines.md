@@ -12,7 +12,7 @@
 - **Error Handling**: Create domain-specific errors, use Go 1.13+ error wrapping
 
 ## Testing Standards
-- **Framework**: Use Ginkgo consistently across all test suites
+- **Framework**: Use Ginkgo consistently across all test suites (read 90-documentation/Testing.md)
 - **Development**: Use `--focus` flags for targeted testing during development
 - **Integration**: Account for container setup time in integration tests
 

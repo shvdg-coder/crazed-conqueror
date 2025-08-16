@@ -69,6 +69,7 @@ func createServerContainerRequest(config *ContainerConfig) testcontainers.Generi
 			Dockerfile: config.GetDockerfilePath(),
 			Context:    paths.ResolvePath(config.GetRootDir(), ""),
 		},
+		Name:           "test-server",
 		Networks:       []string{config.GetNetwork()},
 		NetworkAliases: map[string][]string{config.GetNetwork(): {NetworkAliasApi}},
 		ExposedPorts:   []string{environment.EnvStr(environment.KeyApiPort) + "/tcp"},
@@ -81,6 +82,6 @@ func createServerContainerRequest(config *ContainerConfig) testcontainers.Generi
 		ProviderType:     testcontainers.ProviderDocker,
 		ContainerRequest: apiContainer,
 		Started:          true,
-		Reuse:            false,
+		Reuse:            true,
 	}
 }

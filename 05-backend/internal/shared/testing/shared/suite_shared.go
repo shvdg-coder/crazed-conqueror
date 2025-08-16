@@ -14,39 +14,41 @@ import (
 )
 
 var (
-	suite     *testing.Suite
-	setupOnce sync.Once
-	mutex     sync.RWMutex
+	sharedSuite *testing.Suite
+	initOnce    sync.Once
+	mutex       sync.RWMutex
 )
 
-// GetSharedSuite returns the shared test suite instance with userinfra schemas, creating it if necessary
+// GetSharedSuite returns the shared test suite instance with all schemas, creating it if necessary
 func GetSharedSuite() *testing.Suite {
-	setupOnce.Do(func() {
-		suite = testing.NewTestSuite()
-		suite.AddSchema(userinfra.NewUserSchema(suite.Database))
-		suite.AddSchema(characterinfra.NewCharacterSchema(suite.Database))
-		suite.AddSchema(unitinfra.NewUnitSchema(suite.Database))
-		suite.AddSchema(usercharacterinfra.NewUserCharacterSchema(suite.Database))
-		suite.AddSchema(characterunitinfra.NewCharacterUnitSchema(suite.Database))
-		suite.AddSchema(formationinfra.NewFormationSchema(suite.Database))
-		suite.AddSchema(characterformationinfra.NewCharacterFormationSchema(suite.Database))
+	initOnce.Do(func() {
+		log.Println("Initializing global test suite...")
+		sharedSuite = testing.NewTestSuite()
+		sharedSuite.AddSchema(userinfra.NewUserSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(characterinfra.NewCharacterSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(unitinfra.NewUnitSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(usercharacterinfra.NewUserCharacterSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(characterunitinfra.NewCharacterUnitSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(formationinfra.NewFormationSchema(sharedSuite.Database))
+		sharedSuite.AddSchema(characterformationinfra.NewCharacterFormationSchema(sharedSuite.Database))
 
-		err := suite.CreateAllTables(suite.Context)
+		err := sharedSuite.CreateAllTables(sharedSuite.Context)
 		if err != nil {
 			log.Fatalf("failed to create tables: %s", err)
 		}
 	})
 
-	return suite
+	return sharedSuite
 }
 
-// CleanupSharedSuite terminates the shared test suite
+// CleanupSharedSuite terminates the global test suite
 func CleanupSharedSuite() {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	if suite != nil {
-		suite.Terminate()
-		suite = nil
+	if sharedSuite != nil {
+		log.Println("Cleaning up global test suite...")
+		sharedSuite.Terminate()
+		sharedSuite = nil
 	}
 }

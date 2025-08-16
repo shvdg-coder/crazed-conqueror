@@ -26,6 +26,7 @@ type Suite struct {
 	Server   *containers.ServerContainer
 
 	Database *database.Service
+	Dsn      string
 	Schemas  *schemas.Service
 }
 
@@ -74,6 +75,7 @@ func NewTestSuite() *Suite {
 		Postgres:   postgres,
 		Server:     server,
 		Database:   db,
+		Dsn:        dsn,
 		Schemas:    sch,
 	}
 }

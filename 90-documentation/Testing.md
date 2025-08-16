@@ -12,6 +12,7 @@ ginkgo -v ./...
 
 
 *   `ginkgo`: This is the command to invoke the Ginkgo test runner.
+*   `-p`: This flag stands for "parallel". It tells Ginkgo to run tests in parallel.
 *   `-v`: This flag stands for "verbose". It provides more detailed output about the tests that are running.
 *   `./...`: This is a recursive path specifier. It tells Ginkgo to look for tests in the current directory (`.`) and all of its subdirectories (`/...`).
 
@@ -19,7 +20,7 @@ If you only want to run tests in a specific directory, you can navigate to that 
 
 ```textmate
 cd internal/user
-ginkgo -v
+ginkgo -v -p
 ```
 
 

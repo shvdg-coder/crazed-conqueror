@@ -64,6 +64,7 @@ func createPostgresContainerRequest(config *ContainerConfig) testcontainers.Gene
 
 	postgresContainer := testcontainers.ContainerRequest{
 		Image:          "postgres:17-alpine",
+		Name:           "test-postgres",
 		Networks:       []string{config.GetNetwork()},
 		NetworkAliases: map[string][]string{config.GetNetwork(): {NetworkAliasDb}},
 		Env: map[string]string{
@@ -81,6 +82,6 @@ func createPostgresContainerRequest(config *ContainerConfig) testcontainers.Gene
 		ProviderType:     testcontainers.ProviderDocker,
 		ContainerRequest: postgresContainer,
 		Started:          true,
-		Reuse:            false,
+		Reuse:            true,
 	}
 }
