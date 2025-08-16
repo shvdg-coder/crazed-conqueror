@@ -24,6 +24,7 @@ func (s *UnitRepositoryImpl) GetById(ctx context.Context, id string) (*domain.Un
 		From(TableName).
 		Where(FieldId, id).
 		Build()
+
 	return s.ReadOne(ctx, query, args, ScanUnitEntity)
 }
 
@@ -33,15 +34,15 @@ func (s *UnitRepositoryImpl) Create(ctx context.Context, entities ...*domain.Uni
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
+		argSets[i] = []any{entity.GetId(), entity.GetVocation(), entity.GetFaction(), entity.GetName(), entity.GetLevel()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldId, FieldVocation, FieldFaction, FieldName, FieldLevel).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 
 	return database.Batch(ctx, s.Connection, query, batchArgs)

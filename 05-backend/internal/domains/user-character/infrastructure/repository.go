@@ -25,6 +25,7 @@ func (s *UserCharacterRepositoryImpl) GetByUserId(ctx context.Context, userID st
 		From(TableName).
 		Where(FieldUserId, userID).
 		Build()
+
 	return s.ReadMany(ctx, query, args, ScanUserCharacterEntity)
 }
 
@@ -35,6 +36,7 @@ func (s *UserCharacterRepositoryImpl) GetByCharacterId(ctx context.Context, char
 		From(TableName).
 		Where(FieldCharacterId, characterID).
 		Build()
+
 	return s.ReadMany(ctx, query, args, ScanUserCharacterEntity)
 }
 
@@ -44,15 +46,15 @@ func (s *UserCharacterRepositoryImpl) Create(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetUserId(), entity.GetCharacterId()}
+		argSets[i] = []any{entity.GetUserId(), entity.GetCharacterId()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldUserId, FieldCharacterId).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 
 	return database.Batch(ctx, s.Connection, query, batchArgs)
@@ -74,7 +76,6 @@ func (s *UserCharacterRepositoryImpl) Delete(ctx context.Context, entities ...*d
 		return nil
 	}
 
-	fields := []string{FieldUserId, FieldCharacterId}
 	tuples := make([][]any, len(entities))
 	for i, entity := range entities {
 		tuples[i] = []any{entity.GetUserId(), entity.GetCharacterId()}
@@ -82,7 +83,7 @@ func (s *UserCharacterRepositoryImpl) Delete(ctx context.Context, entities ...*d
 
 	query, args := sql.NewQuery().
 		DeleteFrom(TableName).
-		WhereTupleIn(tuples, fields...).
+		WhereTupleIn(tuples, FieldUserId, FieldCharacterId).
 		Build()
 
 	return database.Execute(ctx, s.Connection, query, args...)

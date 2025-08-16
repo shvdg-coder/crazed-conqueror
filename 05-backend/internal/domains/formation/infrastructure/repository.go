@@ -27,6 +27,7 @@ func (s *FormationRepositoryImpl) GetById(ctx context.Context, id string) (*doma
 		From(TableName).
 		Where(FieldId, id).
 		Build()
+
 	return s.ReadOne(ctx, query, args, ScanFormationEntity)
 }
 
@@ -36,38 +37,52 @@ func (s *FormationRepositoryImpl) Create(ctx context.Context, entities ...*domai
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
 		rows, err := json.Marshal(entity.GetRows())
 		if err != nil {
 			return fmt.Errorf("failed to marshal formation rows: %w", err)
 		}
 
-		argumentSets[i] = []any{entity.GetId(), json.RawMessage(rows)}
+		argSets[i] = []any{entity.GetId(), json.RawMessage(rows)}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldId, FieldRows).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 
 	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
-// Update implements Repository.Update
+// Update updates one or more formation entities in the database
 func (s *FormationRepositoryImpl) Update(ctx context.Context, entities ...*domain.FormationEntity) error {
 	return errors.New("operation not supported")
 }
 
-// Upsert implements Repository.Upsert
+// Upsert upserts one or more formation entities in the database
 func (s *FormationRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.FormationEntity) error {
 	return errors.New("operation not supported")
 }
 
-// Delete implements Repository.Delete
+// Delete removes one or more formation entities from the database
 func (s *FormationRepositoryImpl) Delete(ctx context.Context, entities ...*domain.FormationEntity) error {
-	return errors.New("operation not supported")
+	if len(entities) == 0 {
+		return nil
+	}
+
+	ids := make([]any, len(entities))
+	for i, entity := range entities {
+		ids[i] = entity.GetId()
+	}
+
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereIn(FieldId, ids...).
+		Build()
+
+	return database.Execute(ctx, s.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single formation entity

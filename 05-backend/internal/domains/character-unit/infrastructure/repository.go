@@ -25,6 +25,7 @@ func (s *CharacterUnitRepositoryImpl) GetByCharacterId(ctx context.Context, char
 		From(TableName).
 		Where(FieldCharacterId, characterID).
 		Build()
+
 	return s.ReadMany(ctx, query, args, ScanCharacterUnitEntity)
 }
 
@@ -35,6 +36,7 @@ func (s *CharacterUnitRepositoryImpl) GetByUnitId(ctx context.Context, unitID st
 		From(TableName).
 		Where(FieldUnitId, unitID).
 		Build()
+
 	return s.ReadMany(ctx, query, args, ScanCharacterUnitEntity)
 }
 

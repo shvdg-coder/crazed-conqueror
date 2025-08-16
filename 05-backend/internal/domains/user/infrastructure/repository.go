@@ -24,6 +24,7 @@ func (s *UserRepositoryImpl) GetByEmail(ctx context.Context, email string) (*dom
 		From(TableName).
 		Where(FieldEmail, email).
 		Build()
+
 	return s.ReadOne(ctx, query, args, ScanUserEntity)
 }
 
@@ -35,6 +36,7 @@ func (s *UserRepositoryImpl) Authenticate(ctx context.Context, email, password s
 		Where(FieldEmail, email).
 		Where(FieldPassword, password).
 		Build()
+
 	return s.ReadOne(ctx, query, args, ScanUserEntity)
 }
 
@@ -44,15 +46,15 @@ func (s *UserRepositoryImpl) Create(ctx context.Context, entities ...*domain.Use
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
+		argSets[i] = []any{entity.GetId(), entity.GetEmail(), entity.GetPassword(), entity.GetDisplayName()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldId, FieldEmail, FieldPassword, FieldDisplayName).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 	return database.Batch(ctx, s.Connection, query, batchArgs)
 }

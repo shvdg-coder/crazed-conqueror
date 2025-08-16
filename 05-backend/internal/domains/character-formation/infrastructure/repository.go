@@ -25,6 +25,7 @@ func (r *CharacterFormationRepositoryImpl) GetByCharacterId(ctx context.Context,
 		From(TableName).
 		Where(FieldCharacterId, characterId).
 		Build()
+
 	return r.ReadMany(ctx, query, args, ScanCharacterFormationEntity)
 }
 
@@ -35,6 +36,7 @@ func (r *CharacterFormationRepositoryImpl) GetByFormationId(ctx context.Context,
 		From(TableName).
 		Where(FieldFormationId, formationId).
 		Build()
+
 	return r.ReadMany(ctx, query, args, ScanCharacterFormationEntity)
 }
 
@@ -44,33 +46,47 @@ func (r *CharacterFormationRepositoryImpl) Create(ctx context.Context, entities 
 		return nil
 	}
 
-	argumentSets := make([][]any, len(entities))
+	argSets := make([][]any, len(entities))
 	for i, entity := range entities {
-		argumentSets[i] = []any{entity.GetCharacterId(), entity.GetFormationId()}
+		argSets[i] = []any{entity.GetCharacterId(), entity.GetFormationId()}
 	}
 
 	query, batchArgs := sql.NewQuery().
 		InsertInto(TableName).
 		InsertFields(FieldCharacterId, FieldFormationId).
-		BatchValues(argumentSets).
+		BatchValues(argSets).
 		BuildBatch()
 
 	return database.Batch(ctx, r.Connection, query, batchArgs)
 }
 
-// Update implements Repository.Update
+// Update is not supported for character-formation associations
 func (r *CharacterFormationRepositoryImpl) Update(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
 	return errors.New("update operation not supported for character-formation associations")
 }
 
-// Upsert implements Repository.Upsert
+// Upsert is not supported for character-formation associations
 func (r *CharacterFormationRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
 	return errors.New("upsert operation not supported for character-formation associations")
 }
 
-// Delete implements Repository.Delete
+// Delete removes character-formation associations from the database
 func (r *CharacterFormationRepositoryImpl) Delete(ctx context.Context, entities ...*domain.CharacterFormationEntity) error {
-	return errors.New("delete operation not supported for character-formation associations")
+	if len(entities) == 0 {
+		return nil
+	}
+
+	tuples := make([][]any, len(entities))
+	for i, entity := range entities {
+		tuples[i] = []any{entity.GetCharacterId(), entity.GetFormationId()}
+	}
+
+	query, args := sql.NewQuery().
+		DeleteFrom(TableName).
+		WhereTupleIn(tuples, FieldCharacterId, FieldFormationId).
+		Build()
+
+	return database.Execute(ctx, r.Connection, query, args...)
 }
 
 // ReadOne executes a query and returns a single character formation entity

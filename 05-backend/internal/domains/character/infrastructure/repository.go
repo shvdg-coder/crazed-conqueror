@@ -24,6 +24,7 @@ func (s *CharacterRepositoryImpl) GetById(ctx context.Context, id string) (*doma
 		From(TableName).
 		Where(FieldId, id).
 		Build()
+
 	return s.ReadOne(ctx, query, args, ScanCharacter)
 }
 
