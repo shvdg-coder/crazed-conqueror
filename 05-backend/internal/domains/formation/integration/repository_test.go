@@ -6,6 +6,7 @@ import (
 	infra "shvdg/crazed-conquerer/internal/domains/formation/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 
@@ -50,10 +51,9 @@ var _ = Describe("Formation Repository", Ordered, func() {
 			err := formationRepo.Create(ctx, formation)
 			Expect(err).ToNot(HaveOccurred(), "failed to create formation")
 
-			fields := []string{infra.FieldId}
-			values := []any{formation.GetId()}
+			query, args := sql.NewQuery().Count().From(infra.TableName).Where(infra.FieldId, formation.GetId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count formations")
 			Expect(count).To(Equal(1), "expected 1 formation to be created")
 		})
