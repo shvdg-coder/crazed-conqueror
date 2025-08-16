@@ -16,7 +16,7 @@ message FormationEntity {
   google.protobuf.Timestamp updated_at = 4;
 }
 
-// FormationRow represents a single row in the formation
+// FormationRowEntity represents a single row in the formation
 message FormationRowEntity {
   repeated FormationColumnEntity columns = 1;
 }

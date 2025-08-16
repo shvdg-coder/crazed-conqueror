@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package zone;
+
+option go_package = "shvdg/crazed-conquerer/internal/domains/zone/domain;domain";
+
+import "google/protobuf/timestamp.proto";
+
+// Message for Zone
+message ZoneEntity {
+  string id = 1;
+
+  repeated ZoneRowEntity rows = 2;
+
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// ZoneRowEntity represents a single row in the zone
+message ZoneRowEntity {
+  repeated ZoneColumnEntity columns = 1;
+}
+
+// ZoneColumnEntity represents a single tile in the zone grid
+message ZoneColumnEntity {
+  int32 position_x = 1;
+  int32 position_y = 2;
+  int32 level = 10;
+
+  string territory = 11;
+  string faction = 12;
+  string biome = 13;
+  string landscape = 14;
+  string structure = 15;
+}
