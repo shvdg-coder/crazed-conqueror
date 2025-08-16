@@ -6,6 +6,7 @@ import (
 	infra "shvdg/crazed-conquerer/internal/domains/character/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 
@@ -47,10 +48,9 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 			err := characterRepo.Create(ctx, character)
 			Expect(err).ToNot(HaveOccurred(), "failed to create character")
 
-			fields := []string{infra.FieldId, infra.FieldName}
-			values := []any{character.GetId(), character.GetName()}
+			query, args := sql.NewQuery().Count().From(infra.TableName).Where(infra.FieldId, character.GetId()).Where(infra.FieldName, character.GetName()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count characters")
 			Expect(count).To(Equal(1), "expected 1 character to be created")
 		})
@@ -121,7 +121,9 @@ var _ = Describe("CharacterEntity Repository", Ordered, func() {
 			err := characterRepo.Delete(ctx, character)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete character")
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, []string{infra.FieldId}, []any{character.GetId()})
+			query, args := sql.NewQuery().Count().From(infra.TableName).Where(infra.FieldId, character.GetId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
+
 			Expect(err).ToNot(HaveOccurred(), "failed to count characters")
 			Expect(count).To(BeZero(), "expected character to be deleted")
 		})

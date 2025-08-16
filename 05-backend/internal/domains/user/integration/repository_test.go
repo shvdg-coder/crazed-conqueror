@@ -3,9 +3,10 @@ package integration
 import (
 	"context"
 	"shvdg/crazed-conquerer/internal/domains/user/domain"
-	infrastructure2 "shvdg/crazed-conquerer/internal/domains/user/infrastructure"
+	infra "shvdg/crazed-conquerer/internal/domains/user/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 
@@ -20,7 +21,7 @@ var _ = Describe("User Repository", Ordered, func() {
 	var ctx context.Context
 
 	var suite *testing.Suite
-	var userRepo *infrastructure2.UserRepositoryImpl
+	var userRepo *infra.UserRepositoryImpl
 
 	BeforeAll(func() {
 		suite = shared.GetSharedSuite()
@@ -28,7 +29,7 @@ var _ = Describe("User Repository", Ordered, func() {
 		Expect(err).ToNot(HaveOccurred(), "failed to start transaction")
 
 		ctx = contexts.SetTransaction(suite.Context, transaction)
-		userRepo = infrastructure2.NewUserRepositoryImpl(suite.Database)
+		userRepo = infra.NewUserRepositoryImpl(suite.Database)
 	})
 
 	AfterAll(func() {
@@ -47,10 +48,12 @@ var _ = Describe("User Repository", Ordered, func() {
 			err := userRepo.Create(ctx, user)
 			Expect(err).ToNot(HaveOccurred(), "failed to create user")
 
-			fields := []string{infrastructure2.FieldId, infrastructure2.FieldEmail, infrastructure2.FieldDisplayName}
-			values := []any{user.GetId(), user.GetEmail(), user.GetDisplayName()}
+			query, args := sql.NewQuery().Count().From(infra.TableName).
+				Where(infra.FieldId, user.GetId()).
+				Where(infra.FieldEmail, user.GetEmail()).
+				Where(infra.FieldDisplayName, user.GetDisplayName()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
 
-			count, err := database.Count(ctx, suite.Database, infrastructure2.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count users")
 			Expect(count).To(Equal(1), "expected 1 user to be created")
 		})
@@ -141,7 +144,9 @@ var _ = Describe("User Repository", Ordered, func() {
 			err := userRepo.Delete(ctx, user)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete user")
 
-			count, err := database.Count(ctx, suite.Database, infrastructure2.TableName, []string{infrastructure2.FieldId}, []any{user.GetId()})
+			query, args := sql.NewQuery().Count().From(infra.TableName).Where(infra.FieldId, user.GetId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
+
 			Expect(err).ToNot(HaveOccurred(), "failed to count users")
 			Expect(count).To(BeZero(), "expected user to be deleted")
 		})

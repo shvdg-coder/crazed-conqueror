@@ -10,6 +10,7 @@ import (
 	unitInfra "shvdg/crazed-conquerer/internal/domains/unit/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 
@@ -70,10 +71,11 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 			err := characterUnitRepo.Create(ctx, dummyCharacterUnit)
 			Expect(err).ToNot(HaveOccurred(), "failed to create character unit")
 
-			fields := []string{infra.FieldCharacterId, infra.FieldUnitId}
-			values := []any{dummyCharacterUnit.GetCharacterId(), dummyCharacterUnit.GetUnitId()}
+			query, args := sql.NewQuery().Count().From(infra.TableName).
+				Where(infra.FieldCharacterId, dummyCharacterUnit.GetCharacterId()).
+				Where(infra.FieldUnitId, dummyCharacterUnit.GetUnitId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
 
-			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count character units")
 			Expect(count).To(Equal(1), "expected 1 character unit to be created")
 		})
@@ -110,9 +112,11 @@ var _ = Describe("CharacterUnit Repository", Ordered, func() {
 			err := characterUnitRepo.Delete(ctx, dummyCharacterUnit)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete character unit")
 
-			fields := []string{infra.FieldCharacterId, infra.FieldUnitId}
-			values := []any{dummyCharacterUnit.GetCharacterId(), dummyCharacterUnit.GetUnitId()}
-			count, err := database.Count(ctx, suite.Database, infra.TableName, fields, values)
+			query, args := sql.NewQuery().Count().From(infra.TableName).
+				Where(infra.FieldCharacterId, dummyCharacterUnit.GetCharacterId()).
+				Where(infra.FieldUnitId, dummyCharacterUnit.GetUnitId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
+
 			Expect(err).ToNot(HaveOccurred(), "failed to count character units")
 			Expect(count).To(BeZero(), "expected character unit to be deleted")
 		})

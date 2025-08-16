@@ -6,6 +6,7 @@ import (
 	infa "shvdg/crazed-conquerer/internal/domains/unit/infrastructure"
 	"shvdg/crazed-conquerer/internal/shared/contexts"
 	"shvdg/crazed-conquerer/internal/shared/database"
+	"shvdg/crazed-conquerer/internal/shared/sql"
 	"shvdg/crazed-conquerer/internal/shared/testing"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 
@@ -47,10 +48,12 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			err := unitRepo.Create(ctx, unit)
 			Expect(err).ToNot(HaveOccurred(), "failed to create unit")
 
-			fields := []string{infa.FieldId, infa.FieldVocation, infa.FieldName}
-			values := []any{unit.GetId(), unit.GetVocation(), unit.GetName()}
+			query, args := sql.NewQuery().Count().From(infa.TableName).
+				Where(infa.FieldId, unit.GetId()).
+				Where(infa.FieldVocation, unit.GetVocation()).
+				Where(infa.FieldName, unit.GetName()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
 
-			count, err := database.Count(ctx, suite.Database, infa.TableName, fields, values)
 			Expect(err).ToNot(HaveOccurred(), "failed to count units")
 			Expect(count).To(Equal(1), "expected 1 unit to be created")
 		})
@@ -146,7 +149,9 @@ var _ = Describe("Unit Repository", Ordered, func() {
 			err := unitRepo.Delete(ctx, unit)
 			Expect(err).ToNot(HaveOccurred(), "failed to delete unit")
 
-			count, err := database.Count(ctx, suite.Database, infa.TableName, []string{infa.FieldId}, []any{unit.GetId()})
+			query, args := sql.NewQuery().Count().From(infa.TableName).Where(infa.FieldId, unit.GetId()).Build()
+			count, err := database.QueryOne(ctx, suite.Database, query, args, database.ScanInt)
+
 			Expect(err).ToNot(HaveOccurred(), "failed to count units")
 			Expect(count).To(BeZero(), "expected unit to be deleted")
 		})

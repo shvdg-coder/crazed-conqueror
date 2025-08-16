@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"shvdg/crazed-conquerer/internal/shared/sql"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -23,54 +22,29 @@ func Execute(ctx context.Context, connection Connection, script string, argument
 	})
 }
 
-// Count executes a count query with optional arguments and returns the number of rows
-func Count(ctx context.Context, connection Connection, table string, fields []string, values []any) (int, error) {
-	if ctx == nil || table == "" {
-		return 0, fmt.Errorf("invalid arguments to count rows")
-	}
-
-	return WithExecutorResult(ctx, connection, func(executor Executor) (int, error) {
-		var count int
-
-		qb := sql.NewQuery().Count().From(table)
-		for i, field := range fields {
-			qb.Where(field, values[i])
-		}
-
-		query, args := qb.Build()
-
-		err := executor.QueryRow(ctx, query, args...).Scan(&count)
-		if err != nil {
-			return count, fmt.Errorf("failed to count rows: %w", err)
-		}
-
-		return count, nil
-	})
-}
-
 // QueryOne executes a script with arguments and returns a single scanned value
-func QueryOne[T any](ctx context.Context, connection Connection, query string, arguments []any, scan ScannerFunc[T]) (T, error) {
+func QueryOne[T any](ctx context.Context, connection Connection, query string, args []any, scan ScannerFunc[T]) (T, error) {
 	var zero T
 
 	if ctx == nil || query == "" || scan == nil {
-		return zero, fmt.Errorf("invalid arguments to query single result")
+		return zero, fmt.Errorf("invalid args to query single result")
 	}
 
 	return WithExecutorResult(ctx, connection, func(executor Executor) (T, error) {
-		row := executor.QueryRow(ctx, query, arguments...)
+		row := executor.QueryRow(ctx, query, args...)
 		return scan(row)
 	})
 }
 
 // QueryMany executes a script with arguments and returns a slice of scanned values
-func QueryMany[T any](ctx context.Context, connection Connection, query string, arguments []any, scan ScannerFunc[T]) ([]T, error) {
+func QueryMany[T any](ctx context.Context, connection Connection, query string, args []any, scan ScannerFunc[T]) ([]T, error) {
 	var zero []T
 	if ctx == nil || query == "" || scan == nil {
-		return zero, fmt.Errorf("invalid arguments to query multiple results")
+		return zero, fmt.Errorf("invalid args to query multiple results")
 	}
 
 	return WithExecutorResult(ctx, connection, func(executor Executor) ([]T, error) {
-		rows, err := executor.Query(ctx, query, arguments...)
+		rows, err := executor.Query(ctx, query, args...)
 		if err != nil {
 			return zero, fmt.Errorf("failed to execute command: %w", err)
 		}
@@ -99,8 +73,8 @@ func Batch(ctx context.Context, connection Connection, query string, argSets [][
 	return WithExecutor(ctx, connection, func(executor Executor) error {
 		batch := &pgx.Batch{}
 
-		for _, arguments := range argSets {
-			batch.Queue(query, arguments...)
+		for _, args := range argSets {
+			batch.Queue(query, args...)
 		}
 
 		results := executor.SendBatch(ctx, batch)
