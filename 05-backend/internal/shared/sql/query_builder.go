@@ -272,6 +272,20 @@ func (qb *QueryBuilder) BatchSets(argumentSets [][]any, setFields ...string) *Qu
 
 // UPSERT Methods
 
+// BatchUpsert is a convenience method that combines BatchValues with ON CONFLICT
+func (qb *QueryBuilder) BatchUpsert(argumentSets [][]any, keyFields []string, updateFields ...string) *QueryBuilder {
+	qb.BatchValues(argumentSets)
+	qb.OnConflict(keyFields...)
+
+	if len(updateFields) == 0 {
+		qb.DoNothing()
+	} else {
+		qb.DoUpdate(updateFields...)
+	}
+
+	return qb
+}
+
 // OnConflict adds an ON CONFLICT clause with key fields
 func (qb *QueryBuilder) OnConflict(keyFields ...string) *QueryBuilder {
 	qb.query.WriteString(" ON CONFLICT (")
@@ -300,20 +314,6 @@ func (qb *QueryBuilder) DoUpdate(updateFields ...string) *QueryBuilder {
 	}
 
 	qb.query.WriteString(strings.Join(setClauses, ", "))
-	return qb
-}
-
-// BatchUpsert is a convenience method that combines BatchValues with ON CONFLICT
-func (qb *QueryBuilder) BatchUpsert(argumentSets [][]any, keyFields []string, updateFields ...string) *QueryBuilder {
-	qb.BatchValues(argumentSets)
-	qb.OnConflict(keyFields...)
-
-	if len(updateFields) == 0 {
-		qb.DoNothing()
-	} else {
-		qb.DoUpdate(updateFields...)
-	}
-
 	return qb
 }
 

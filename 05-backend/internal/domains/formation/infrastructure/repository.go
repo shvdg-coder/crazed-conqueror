@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"shvdg/crazed-conquerer/internal/domains/formation/domain"
 	"shvdg/crazed-conquerer/internal/shared/database"
@@ -58,12 +57,52 @@ func (s *FormationRepositoryImpl) Create(ctx context.Context, entities ...*domai
 
 // Update updates one or more formation entities in the database
 func (s *FormationRepositoryImpl) Update(ctx context.Context, entities ...*domain.FormationEntity) error {
-	return errors.New("operation not supported")
+	if len(entities) == 0 {
+		return nil
+	}
+
+	argSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		rows, err := json.Marshal(entity.GetRows())
+		if err != nil {
+			return fmt.Errorf("failed to marshal formation rows: %w", err)
+		}
+
+		argSets[i] = []any{json.RawMessage(rows), entity.GetId()}
+	}
+
+	query, batchArgs := sql.NewQuery().
+		Update(TableName).
+		BatchSets(argSets, FieldRows).
+		Where(FieldId).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Upsert upserts one or more formation entities in the database
 func (s *FormationRepositoryImpl) Upsert(ctx context.Context, entities ...*domain.FormationEntity) error {
-	return errors.New("operation not supported")
+	if len(entities) == 0 {
+		return nil
+	}
+
+	argSets := make([][]any, len(entities))
+	for i, entity := range entities {
+		rows, err := json.Marshal(entity.GetRows())
+		if err != nil {
+			return fmt.Errorf("failed to marshal formation rows: %w", err)
+		}
+
+		argSets[i] = []any{entity.GetId(), json.RawMessage(rows)}
+	}
+
+	query, batchArgs := sql.NewQuery().
+		InsertInto(TableName).
+		InsertFields(FieldId, FieldRows).
+		BatchUpsert(argSets, []string{FieldId}, FieldRows).
+		BuildBatch()
+
+	return database.Batch(ctx, s.Connection, query, batchArgs)
 }
 
 // Delete removes one or more formation entities from the database
