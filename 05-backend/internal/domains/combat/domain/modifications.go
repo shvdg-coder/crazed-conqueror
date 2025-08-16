@@ -4,7 +4,7 @@ import (
 	sharedDomain "shvdg/crazed-conquerer/internal/shared/types"
 )
 
-// Modifications contains all active modifiers for a combatant
+// Modifications contain all active modifiers for a combatant
 type Modifications struct {
 	HealthModifiers                 []HealthModifier
 	AttackPowerModifiers            []AttackPowerModifier
