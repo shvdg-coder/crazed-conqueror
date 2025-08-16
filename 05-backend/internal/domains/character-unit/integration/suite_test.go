@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"fmt"
 	"shvdg/crazed-conquerer/internal/shared/testing/shared"
 	"testing"
 
@@ -10,20 +11,21 @@ import (
 
 func TestInfrastructure(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CharacterUnit Infrastructure Tests")
+	RunSpecs(t, "Character Unit Domain Integration Tests")
 }
 
 // Executes the first block before and the second block after all the tests are run.
 var _ = SynchronizedBeforeSuite(func() []byte {
-	shared.GetSharedSuite()
-	return nil
+	return shared.InitializeGlobalSuite()
 }, func(data []byte) {
-	// N.A
+	if err := shared.SetupLocalSuite(data); err != nil {
+		Fail(fmt.Sprintf("Failed to setup local test suite: %v", err))
+	}
 })
 
 // Executes the first block before and the second block after the teardown.
 var _ = SynchronizedAfterSuite(func() {
 	// N.A
 }, func() {
-	shared.CleanupSharedSuite()
+	shared.CleanupGlobalSuite()
 })
