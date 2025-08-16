@@ -1,12 +1,10 @@
 package domain
 
 import (
-	"encoding/json"
 	"shvdg/crazed-conquerer/internal/shared/converters"
 	"time"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // FormationEntityBuilder helps build and configure a FormationEntity object.
@@ -43,27 +41,15 @@ func (b *FormationEntityBuilder) WithEmptyRows() *FormationEntityBuilder {
 	return b
 }
 
-// WithRowsFromJSON directly unmarshal FormationRowEntity array from JSON
-func (b *FormationEntityBuilder) WithRowsFromJSON(rowsJSON []byte) *FormationEntityBuilder {
-	if len(rowsJSON) == 0 {
-		return b.WithEmptyRows()
+// WithRowsFromJson directly unmarshal FormationRowEntity array from JSON
+func (b *FormationEntityBuilder) WithRowsFromJson(rowsJson []byte) *FormationEntityBuilder {
+	rows, err := fromRowsJsonToRowsEntity(rowsJson)
+	if err != nil {
+		b.WithEmptyRows()
+	} else {
+		b.WithRows(rows)
 	}
 
-	var rowsData []json.RawMessage
-	if err := json.Unmarshal(rowsJSON, &rowsData); err != nil {
-		return b.WithEmptyRows()
-	}
-
-	rows := make([]*FormationRowEntity, len(rowsData))
-	for i, rowJSON := range rowsData {
-		row := &FormationRowEntity{}
-		if err := protojson.Unmarshal(rowJSON, row); err != nil {
-			continue // Skip malformed rows
-		}
-		rows[i] = row
-	}
-
-	b.formationEntity.Rows = rows
 	return b
 }
 

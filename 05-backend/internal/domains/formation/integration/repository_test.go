@@ -40,17 +40,9 @@ var _ = Describe("Formation Repository", Ordered, func() {
 		var formation *domain.FormationEntity
 
 		BeforeAll(func() {
-			jsonRows := []byte(`[
-				{
-					"columns": [
-						{"position_x": 0, "position_y": 0, "unit_id": "unit_1"},
-						{"position_x": 1, "position_y": 0, "unit_id": "unit_2"}
-					]
-				}
-			]`)
 			formation = domain.NewFormationEntity().
 				WithDefaults().
-				WithRowsFromJSON(jsonRows).
+				WithRowsFromJson(rowsJson).
 				Build()
 		})
 

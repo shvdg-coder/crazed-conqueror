@@ -20,7 +20,7 @@ func ScanFormationEntity(scanner database.RowScanner) (*domain.FormationEntity, 
 
 	builder := domain.NewFormationEntity().
 		WithId(id).
-		WithRowsFromJSON(rowsJSON)
+		WithRowsFromJson(rowsJSON)
 
 	if createdAt.Valid {
 		builder = builder.WithCreatedAt(createdAt.Time)
